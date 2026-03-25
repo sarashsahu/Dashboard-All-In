@@ -1,0 +1,41 @@
+trigger:
+- main
+
+pool:
+  name: self-hosted-pool
+
+stages:
+
+- stage: Build
+  jobs:
+  - job: BuildImage
+    steps:
+    - script: |
+        az acr build --registry sarashcr --image myapp:latest .
+      displayName: Build Image in ACR
+
+- stage: Deploy_Dev
+  dependsOn: Build
+  jobs:
+  - job: DeployDev
+    steps:
+    - script: |
+        kubectl apply -f k8s/dev.yaml
+
+- stage: Approval
+  dependsOn: Deploy_Dev
+  jobs:
+  - job: Wait
+    pool: server
+    steps:
+    - task: ManualValidation@0
+      inputs:
+        instructions: "Approve to deploy to PROD"
+
+- stage: Deploy_Prod
+  dependsOn: Approval
+  jobs:
+  - job: DeployProd
+    steps:
+    - script: |
+        kubectl apply -f k8s/prod.yaml
