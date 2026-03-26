@@ -8,34 +8,33 @@ stages:
 
 - stage: Build
   jobs:
-  - job: BuildImage
+  - job: Build
     steps:
     - script: |
-        az acr build --registry sarashcr --image myapp:latest .
-      displayName: Build Image in ACR
+        docker build -t sarashcr.azurecr.io/myapp:latest .
+        docker push sarashcr.azurecr.io/myapp:latest
 
 - stage: Deploy_Dev
-  dependsOn: Build
   jobs:
-  - job: DeployDev
+  - job: Deploy
     steps:
     - script: |
-        kubectl apply -f k8s/dev.yaml
+        kubectl create namespace dev --dry-run=client -o yaml | kubectl apply -f -
+        kubectl apply -f dev-deploy.yaml
 
 - stage: Approval
-  dependsOn: Deploy_Dev
   jobs:
   - job: Wait
     pool: server
     steps:
     - task: ManualValidation@0
       inputs:
-        instructions: "Approve to deploy to PROD"
+        instructions: "Approve deployment to PROD"
 
 - stage: Deploy_Prod
-  dependsOn: Approval
   jobs:
-  - job: DeployProd
+  - job: Deploy
     steps:
     - script: |
-        kubectl apply -f k8s/prod.yaml
+        kubectl create namespace prod --dry-run=client -o yaml | kubectl apply -f -
+        kubectl apply -f prod-deploy.yaml
