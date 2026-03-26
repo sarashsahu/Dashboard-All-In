@@ -3,23 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TERMINAL // DEVOPS_OS_v4.2</title>
+    <title>TERMINAL // OS_v5.0_ELITE</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
 
     <style>
         :root {
             --neon-green: #00ff9f;
-            --dark-bg: #050505;
-            --panel-bg: rgba(0, 20, 15, 0.8);
-            --border-glow: 0 0 8px rgba(0, 255, 159, 0.3);
-            --text-glow: 0 0 5px rgba(0, 255, 159, 0.5);
+            --neon-red: #ff0055;
+            --dark-bg: #030303;
+            --panel-bg: rgba(0, 15, 10, 0.9);
+            --border-glow: 0 0 10px rgba(0, 255, 159, 0.4);
         }
 
         * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+            margin: 0; padding: 0; box-sizing: border-box;
             font-family: 'Share Tech Mono', monospace;
         }
 
@@ -29,133 +27,104 @@
             height: 100vh;
             display: flex;
             overflow: hidden;
-            background-image: linear-gradient(rgba(0, 255, 159, 0.05) 1px, transparent 1px),
-                              linear-gradient(90px, rgba(0, 255, 159, 0.05) 1px, transparent 1px);
-            background-size: 30px 30px;
+            background-image: radial-gradient(circle at center, #001a12 0%, #030303 100%);
         }
 
-        /* CRT Scanline Effect */
-        body::before {
-            content: " ";
-            display: block;
-            position: absolute;
-            top: 0; left: 0; bottom: 0; right: 0;
-            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), 
-                        linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
-            z-index: 10;
-            background-size: 100% 2px, 3px 100%;
-            pointer-events: none;
+        /* CRT Overlay */
+        body::after {
+            content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: repeating-linear-gradient(0deg, rgba(0,0,0,0.1), rgba(0,0,0,0.1) 1px, transparent 1px, transparent 2px);
+            pointer-events: none; z-index: 100;
         }
 
         /* Sidebar */
         .sidebar {
-            width: 240px;
-            background: rgba(0, 10, 5, 0.95);
+            width: 260px;
+            background: #000;
             border-right: 2px solid var(--neon-green);
             padding: 20px;
             display: flex;
             flex-direction: column;
-            gap: 20px;
-            box-shadow: 5px 0 15px rgba(0, 255, 159, 0.1);
-            z-index: 5;
+            gap: 15px;
+            z-index: 10;
         }
 
         .brand {
-            font-size: 1.5rem;
-            font-weight: bold;
-            text-shadow: var(--text-glow);
-            border-bottom: 2px solid var(--neon-green);
+            font-size: 1.4rem;
+            letter-spacing: 3px;
+            text-shadow: 0 0 8px var(--neon-green);
+            border-bottom: 1px solid var(--neon-green);
             padding-bottom: 10px;
-            margin-bottom: 10px;
+            margin-bottom: 5px;
         }
 
         .widget {
-            border: 1px solid rgba(0, 255, 159, 0.3);
+            border: 1px solid rgba(0, 255, 159, 0.2);
             padding: 12px;
             background: var(--panel-bg);
         }
 
-        .widget-title { font-size: 10px; color: #008f5d; letter-spacing: 2px; }
-        .widget-value { font-size: 18px; margin-top: 5px; color: #fff; text-shadow: var(--text-glow); }
+        .widget-title { font-size: 9px; opacity: 0.6; text-transform: uppercase; }
+        .widget-value { font-size: 1.1rem; margin-top: 4px; color: #fff; }
 
-        /* Main Content */
-        .main {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            position: relative;
-        }
+        /* Main Area */
+        .main { flex: 1; display: flex; flex-direction: column; position: relative; }
 
         .topbar {
-            padding: 15px 30px;
-            background: rgba(0, 255, 159, 0.05);
-            border-bottom: 1px solid rgba(0, 255, 159, 0.2);
-            font-size: 14px;
-            display: flex;
-            justify-content: space-between;
+            padding: 12px 25px;
+            background: rgba(0, 255, 159, 0.03);
+            border-bottom: 1px solid rgba(0, 255, 159, 0.1);
+            display: flex; justify-content: space-between; font-size: 12px;
         }
 
-        .content {
-            padding: 25px;
-            overflow-y: auto;
-            flex: 1;
-        }
+        .content { padding: 20px; overflow-y: auto; flex: 1; }
 
-        /* Grid Layout */
+        /* Grid */
         .dashboard {
             display: grid;
             grid-template-columns: repeat(12, 1fr);
-            grid-auto-rows: minmax(180px, auto);
             gap: 20px;
-            max-width: 1400px;
+            max-width: 1600px;
             margin: 0 auto;
         }
 
         .card {
             background: var(--panel-bg);
-            border: 1px solid rgba(0, 255, 159, 0.3);
-            border-radius: 4px;
+            border: 1px solid rgba(0, 255, 159, 0.2);
             padding: 15px;
             position: relative;
-            transition: all 0.3s ease;
-        }
-
-        .card:hover {
-            border-color: var(--neon-green);
-            box-shadow: var(--border-glow);
         }
 
         .card::before {
-            content: ""; position: absolute; top: 0; left: 0; width: 10px; height: 10px;
+            content: ""; position: absolute; top: -1px; left: -1px; width: 15px; height: 15px;
             border-top: 2px solid var(--neon-green); border-left: 2px solid var(--neon-green);
         }
 
         .title {
-            font-size: 12px;
-            color: var(--neon-green);
-            text-transform: uppercase;
+            font-size: 11px;
+            letter-spacing: 1px;
             margin-bottom: 15px;
-            display: flex;
-            justify-content: space-between;
+            color: var(--neon-green);
+            border-left: 3px solid var(--neon-green);
+            padding-left: 8px;
         }
 
-        /* Specific Card Sizing */
-        .deploy { grid-column: span 8; }
-        .calc { grid-column: span 4; }
-        .traffic { grid-column: span 4; }
-        .error { grid-column: span 4; }
-        .todo { grid-column: span 4; }
+        /* Column Span Logic */
+        .col-8 { grid-column: span 8; }
+        .col-4 { grid-column: span 4; }
 
-        /* Inputs & Buttons */
+        /* Buttons & Inputs */
+        .btn-group { display: flex; gap: 5px; }
+        
         button {
-            background: transparent;
+            background: rgba(0, 255, 159, 0.05);
             border: 1px solid var(--neon-green);
             color: var(--neon-green);
-            padding: 8px 15px;
+            padding: 6px 12px;
             cursor: pointer;
-            text-transform: uppercase;
-            font-size: 11px;
-            transition: 0.2s;
+            font-size: 10px;
+            font-weight: bold;
+            transition: 0.1s;
         }
 
         button:hover {
@@ -164,140 +133,139 @@
             box-shadow: var(--border-glow);
         }
 
+        button.danger { border-color: var(--neon-red); color: var(--neon-red); }
+        button.danger:hover { background: var(--neon-red); color: #000; }
+
         input {
-            background: rgba(0,0,0,0.5);
-            border: 1px solid #004d30;
-            color: var(--neon-green);
-            padding: 10px;
-            width: 100%;
-            margin-bottom: 10px;
+            background: #000; border: 1px solid rgba(0, 255, 159, 0.4);
+            color: var(--neon-green); padding: 8px; width: 100%; outline: none;
         }
 
-        /* Calculator Styling */
+        /* Calculator */
         .calc-display {
-            background: #000;
-            padding: 15px;
-            text-align: right;
-            font-size: 20px;
-            border: 1px inset rgba(0, 255, 159, 0.2);
-            margin-bottom: 10px;
-            height: 55px;
+            background: #000; padding: 12px; text-align: right;
+            font-size: 22px; border: 1px solid rgba(0, 255, 159, 0.3);
+            margin-bottom: 10px; min-height: 50px; color: #fff;
         }
+        .calc-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; }
 
-        .calc-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 8px;
-        }
-
-        /* Task List */
-        .todo-list {
-            max-height: 200px;
-            overflow-y: auto;
-        }
-
+        /* Todo List */
         .todo-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 8px;
-            border-bottom: 1px solid rgba(0, 255, 159, 0.1);
-            font-size: 13px;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 8px; border-bottom: 1px solid rgba(0, 255, 159, 0.1);
+        }
+        .todo-text { cursor: pointer; flex: 1; transition: 0.3s; }
+        .todo-text.done { color: #005536; text-decoration: line-through; }
+
+        /* Console Log Footer */
+        .console {
+            height: 120px;
+            background: #000;
+            border-top: 2px solid var(--neon-green);
+            padding: 10px 20px;
+            font-size: 11px;
+            overflow-y: hidden;
+            color: #008f5d;
         }
 
-        .done { color: #004d30; text-decoration: line-through; }
-
-        @media (max-width: 1100px) {
-            .deploy, .calc, .traffic, .error, .todo { grid-column: span 12; }
-            .sidebar { width: 180px; }
+        @media (max-width: 1000px) {
+            .col-8, .col-4 { grid-column: span 12; }
+            .sidebar { display: none; }
         }
     </style>
 </head>
 <body>
 
 <div class="sidebar">
-    <div class="brand">CORE_OS</div>
+    <div class="brand">~SYSTEM@ADMIN</div>
+    
     <div class="widget">
-        <div class="widget-title">SYSTEM STATUS</div>
-        <div class="widget-value" id="statusText">OPERATIONAL</div>
+        <div class="widget-title">KERNEL_STATUS</div>
+        <div class="widget-value" id="statusText">STABLE</div>
     </div>
+
     <div class="widget">
-        <div class="widget-title">LOCAL TIME</div>
+        <div class="widget-title">CLOCK</div>
         <div id="clock" class="widget-value">00:00:00</div>
     </div>
+
     <div class="widget">
         <div class="widget-title">UPTIME</div>
         <div id="uptime" class="widget-value">00:00:00</div>
     </div>
+
     <div class="widget">
-        <div class="widget-title">PROCESS TIMER</div>
-        <div id="stopwatch" class="widget-value">00:00:00</div>
-        <div style="margin-top:10px; display: flex; gap: 5px;">
-            <button onclick="startSW()">RUN</button>
+        <div class="widget-title">STOPWATCH</div>
+        <div id="stopwatch" class="widget-value" style="color:var(--neon-green)">00:00:00</div>
+        <div class="btn-group" style="margin-top:10px">
+            <button onclick="startSW()">START</button>
             <button onclick="stopSW()">HALT</button>
+            <button onclick="resetSW()" class="danger">RST</button>
         </div>
     </div>
 </div>
 
 <div class="main">
     <div class="topbar">
-        <span>SESSION: ROOT@DEVOPS_NODE_01</span>
-        <span>SECURITY_LEVEL: ALPHA</span>
+        <span>ID: SEC_ALPHA_9 // NODE: 127.0.0.1</span>
+        <span>ENCRYPTION: AES-256-GCM</span>
     </div>
 
     <div class="content">
         <div class="dashboard">
-
-            <div class="card deploy">
-                <div class="title"><span>SYSTEM_DEPLOYMENT_METRICS</span> <span>[LIVE]</span></div>
-                <div style="height: 250px;">
-                    <canvas id="chart1"></canvas>
-                </div>
-                <button onclick="deploy()" style="margin-top: 15px; width: 100%;">INITIALIZE NEW DEPLOYMENT</button>
+            <div class="card col-8">
+                <div class="title">TRAFFIC_ANALYSIS_REALTIME</div>
+                <div style="height: 220px;"><canvas id="chart1"></canvas></div>
+                <button onclick="deploy()" style="width: 100%; margin-top: 15px;">TRIGGER_DATA_INJECTION</button>
             </div>
 
-            <div class="card calc">
-                <div class="title">MATH_CO-PROCESSOR</div>
+            <div class="card col-4">
+                <div class="title">CO-PROCESSOR</div>
                 <div id="calcDisplay" class="calc-display">0</div>
                 <div class="calc-grid">
                     <button onclick="p('7')">7</button><button onclick="p('8')">8</button><button onclick="p('9')">9</button><button onclick="p('/')">/</button>
                     <button onclick="p('4')">4</button><button onclick="p('5')">5</button><button onclick="p('6')">6</button><button onclick="p('*')">*</button>
                     <button onclick="p('1')">1</button><button onclick="p('2')">2</button><button onclick="p('3')">3</button><button onclick="p('-')">-</button>
-                    <button onclick="p('0')">0</button><button onclick="calc()">=</button><button onclick="clr()">C</button><button onclick="p('+')">+</button>
+                    <button onclick="p('0')">0</button><button onclick="calc()">EXE</button><button onclick="clr()" class="danger">CLR</button><button onclick="p('+')">+</button>
                 </div>
             </div>
 
-            <div class="card traffic">
-                <div class="title">NETWORK_TRAFFIC</div>
+            <div class="card col-4">
+                <div class="title">RESOURCES</div>
                 <canvas id="chart2"></canvas>
             </div>
 
-            <div class="card error">
-                <div class="title">ERROR_LOG_FREQUENCE</div>
+            <div class="card col-4">
+                <div class="title">THREAT_LEVELS</div>
                 <canvas id="chart3"></canvas>
             </div>
 
-            <div class="card todo">
-                <div class="title">EXECUTION_QUEUE</div>
-                <div style="display:flex; gap: 5px; margin-bottom: 10px;">
-                    <input id="todoInput" placeholder="CMD> Enter Task...">
+            <div class="card col-4">
+                <div class="title">PROCESS_QUEUE</div>
+                <div style="display:flex; gap: 5px; margin-bottom: 12px;">
+                    <input id="todoInput" placeholder="Enter Command...">
                     <button onclick="addTodo()">PUSH</button>
                 </div>
-                <div id="todoList" class="todo-list">
-                    </div>
+                <div id="todoList" style="max-height: 150px; overflow-y: auto;"></div>
             </div>
-
         </div>
+    </div>
+
+    <div class="console" id="consoleLog">
+        <div>[SYSTEM] Initializing OS_v5.0...</div>
+        <div>[AUTH] Handshake verified for ROOT...</div>
     </div>
 </div>
 
 <script>
-    // Universal Chart Config
+    // --- Global Chart Config ---
     Chart.defaults.color = '#00ff9f';
     Chart.defaults.borderColor = 'rgba(0, 255, 159, 0.1)';
 
+    // --- Time Logic ---
     let sec = 0;
     setInterval(() => {
-        document.getElementById('clock').innerText = new Date().toLocaleTimeString();
+        document.getElementById('clock').innerText = new Date().toLocaleTimeString('en-GB');
         sec++;
         document.getElementById('uptime').innerText = format(sec);
     }, 1000);
@@ -308,73 +276,84 @@
     }
     function pad(n) { return n < 10 ? '0' + n : n; }
 
-    let sw = 0, swInt;
-    function startSW() { if (swInt) return; swInt = setInterval(() => { sw++; document.getElementById('stopwatch').innerText = format(sw) }, 1000) }
-    function stopSW() { clearInterval(swInt); swInt = null }
+    // --- Stopwatch Logic ---
+    let sw = 0, swInt = null;
+    function startSW() { if(swInt) return; swInt = setInterval(() => { sw++; document.getElementById('stopwatch').innerText = format(sw) }, 1000) }
+    function stopSW() { clearInterval(swInt); swInt = null; }
+    function resetSW() { stopSW(); sw = 0; document.getElementById('stopwatch').innerText = "00:00:00"; log("Stopwatch reset."); }
 
-    function deploy() {
-        const val = Math.floor(Math.random() * 10) + 1;
-        chart1.data.labels.push("");
-        chart1.data.datasets[0].data.push(val);
-        chart1.update();
-    }
-
+    // --- Todo Logic ---
     function addTodo() {
         let input = document.getElementById('todoInput');
         if (!input.value) return;
+        let id = Date.now();
         let d = document.createElement('div');
         d.className = 'todo-item';
-        d.innerHTML = `<span onclick="this.classList.toggle('done')">> ${input.value}</span><button onclick="this.parentElement.remove()" style="padding: 2px 5px; font-size: 8px;">DEL</button>`;
+        d.innerHTML = `
+            <span class="todo-text" id="t-${id}" onclick="toggleDone('t-${id}')">> ${input.value}</span>
+            <button onclick="this.parentElement.remove()" class="danger" style="padding: 2px 6px;">X</button>
+        `;
         document.getElementById('todoList').prepend(d);
+        log(`Task pushed: ${input.value}`);
         input.value = '';
     }
+    function toggleDone(id) {
+        document.getElementById(id).classList.toggle('done');
+        log("Task state toggled.");
+    }
 
+    // --- Calc Logic ---
     let exp = '';
     const calcDisp = document.getElementById('calcDisplay');
     function p(x) { exp += x; calcDisp.innerText = exp; }
-    function calc() { try { exp = eval(exp) + ''; calcDisp.innerText = exp; } catch { exp = ''; calcDisp.innerText = 'ERR'; } }
     function clr() { exp = ''; calcDisp.innerText = '0'; }
+    function calc() {
+        try { exp = eval(exp) + ''; calcDisp.innerText = exp; log("Calculation performed."); } 
+        catch { exp = ''; calcDisp.innerText = 'SYNTAX_ERR'; }
+    }
 
-    // Charts Initialization
+    // --- Console Log Logic ---
+    function log(msg) {
+        const con = document.getElementById('consoleLog');
+        const div = document.createElement('div');
+        div.innerText = `[${new Date().toLocaleTimeString()}] ${msg}`;
+        con.appendChild(div);
+        con.scrollTop = con.scrollHeight;
+    }
+
+    // --- Random Log Generator ---
+    setInterval(() => {
+        const msgs = ["Packet inspected.", "Buffer cleared.", "Node check-in: SUCCESS", "DB synchronized."];
+        log(msgs[Math.floor(Math.random()*msgs.length)]);
+    }, 8000);
+
+    // --- Charts ---
     const chart1 = new Chart(document.getElementById('chart1'), {
         type: 'line',
         data: {
-            labels: ['01', '02', '03', '04', '05'],
-            datasets: [{
-                label: 'DEPLOY_VOL',
-                data: [12, 19, 3, 5, 2],
-                borderColor: '#00ff9f',
-                tension: 0.4,
-                fill: true,
-                backgroundColor: 'rgba(0, 255, 159, 0.1)'
-            }]
+            labels: ['12:00', '12:05', '12:10', '12:15'],
+            datasets: [{ label: 'THROUGHPUT', data: [10, 45, 20, 60], borderColor: '#00ff9f', backgroundColor: 'rgba(0,255,159,0.1)', fill: true }]
         },
         options: { maintainAspectRatio: false }
     });
 
+    function deploy() {
+        chart1.data.datasets[0].data.push(Math.floor(Math.random()*100));
+        chart1.data.labels.push("");
+        chart1.update();
+        log("Data injection sequence started...");
+    }
+
     new Chart(document.getElementById('chart2'), {
-        type: 'bar',
-        data: {
-            labels: ['NA', 'EU', 'AS'],
-            datasets: [{
-                label: 'TRAFFIC_GB',
-                data: [45, 82, 60],
-                backgroundColor: '#00ff9f'
-            }]
-        }
+        type: 'doughnut',
+        data: { labels: ['CPU', 'RAM', 'DISK'], datasets: [{ data: [30, 50, 20], backgroundColor: ['#00ff9f', '#008f5d', '#004d30'], borderWidth: 0 }] }
     });
 
     new Chart(document.getElementById('chart3'), {
-        type: 'line',
+        type: 'radar',
         data: {
-            labels: ['10m', '5m', '1m'],
-            datasets: [{
-                label: 'ERR_RATE',
-                data: [1, 4, 2],
-                borderColor: '#ff0055',
-                backgroundColor: 'rgba(255, 0, 85, 0.1)',
-                fill: true
-            }]
+            labels: ['SQLI', 'XSS', 'DDOS', 'BRUTE'],
+            datasets: [{ label: 'RISK', data: [10, 40, 20, 90], borderColor: '#ff0055', backgroundColor: 'rgba(255,0,85,0.2)' }]
         }
     });
 </script>
