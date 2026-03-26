@@ -1,232 +1,382 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Infam0us Dashboard </title>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TERMINAL // DEVOPS_OS_v4.2</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
 
-<style>
-*{margin:0;padding:0;box-sizing:border-box;font-family:'Inter',sans-serif}
+    <style>
+        :root {
+            --neon-green: #00ff9f;
+            --dark-bg: #050505;
+            --panel-bg: rgba(0, 20, 15, 0.8);
+            --border-glow: 0 0 8px rgba(0, 255, 159, 0.3);
+            --text-glow: 0 0 5px rgba(0, 255, 159, 0.5);
+        }
 
-body{
-  display:flex;
-  background:#020617;
-  color:#e5e7eb;
-  height:100vh;
-}
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Share Tech Mono', monospace;
+        }
 
-.sidebar{
-  width:260px;
-  padding:20px;
-  background:#020617;
-  border-right:1px solid rgba(255,255,255,0.05);
-}
+        body {
+            background-color: var(--dark-bg);
+            color: var(--neon-green);
+            height: 100vh;
+            display: flex;
+            overflow: hidden;
+            background-image: linear-gradient(rgba(0, 255, 159, 0.05) 1px, transparent 1px),
+                              linear-gradient(90px, rgba(0, 255, 159, 0.05) 1px, transparent 1px);
+            background-size: 30px 30px;
+        }
 
-.logo{font-size:20px;font-weight:700;margin-bottom:20px}
+        /* CRT Scanline Effect */
+        body::before {
+            content: " ";
+            display: block;
+            position: absolute;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), 
+                        linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            z-index: 10;
+            background-size: 100% 2px, 3px 100%;
+            pointer-events: none;
+        }
 
-.widget{margin-bottom:15px;padding:12px;border-radius:10px;background:#0f172a}
-.widget-title{font-size:11px;opacity:0.6}
-.widget-value{font-size:16px;margin-top:4px}
+        /* Sidebar */
+        .sidebar {
+            width: 240px;
+            background: rgba(0, 10, 5, 0.95);
+            border-right: 2px solid var(--neon-green);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            box-shadow: 5px 0 15px rgba(0, 255, 159, 0.1);
+            z-index: 5;
+        }
 
-.main{flex:1;display:flex;flex-direction:column}
+        .brand {
+            font-size: 1.5rem;
+            font-weight: bold;
+            text-shadow: var(--text-glow);
+            border-bottom: 2px solid var(--neon-green);
+            padding-bottom: 10px;
+            margin-bottom: 10px;
+        }
 
-.topbar{
-  padding:15px 20px;
-  border-bottom:1px solid rgba(255,255,255,0.05);
-}
+        .widget {
+            border: 1px solid rgba(0, 255, 159, 0.3);
+            padding: 12px;
+            background: var(--panel-bg);
+        }
 
-.content{padding:20px}
+        .widget-title { font-size: 10px; color: #008f5d; letter-spacing: 2px; }
+        .widget-value { font-size: 18px; margin-top: 5px; color: #fff; text-shadow: var(--text-glow); }
 
-.layout{
-  display:grid;
-  grid-template-columns:2fr 1fr;
-  gap:20px;
-}
+        /* Main Content */
+        .main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
 
-.card{
-  background:#0f172a;
-  border-radius:12px;
-  padding:16px;
-}
+        .topbar {
+            padding: 15px 30px;
+            background: rgba(0, 255, 159, 0.05);
+            border-bottom: 1px solid rgba(0, 255, 159, 0.2);
+            font-size: 14px;
+            display: flex;
+            justify-content: space-between;
+        }
 
-.title{font-size:13px;opacity:0.6;margin-bottom:10px}
+        .content {
+            padding: 25px;
+            overflow-y: auto;
+            flex: 1;
+        }
 
-button{
-  padding:8px 14px;
-  border:none;
-  border-radius:8px;
-  background:#6366f1;
-  color:white;
-  cursor:pointer;
-  font-size:13px;
-}
+        /* Grid Layout */
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            grid-auto-rows: minmax(180px, auto);
+            gap: 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
 
-button:hover{opacity:0.9}
+        .card {
+            background: var(--panel-bg);
+            border: 1px solid rgba(0, 255, 159, 0.3);
+            border-radius: 4px;
+            padding: 15px;
+            position: relative;
+            transition: all 0.3s ease;
+        }
 
-.deploy-btn{
-  margin-top:12px;
-  width:auto;
-  padding:8px 16px;
-  font-weight:600;
-}
+        .card:hover {
+            border-color: var(--neon-green);
+            box-shadow: var(--border-glow);
+        }
 
-/* FIXED TODO */
-.todo-row{
-  display:flex;
-  gap:8px;
-}
+        .card::before {
+            content: ""; position: absolute; top: 0; left: 0; width: 10px; height: 10px;
+            border-top: 2px solid var(--neon-green); border-left: 2px solid var(--neon-green);
+        }
 
-.todo-row input{
-  flex:1;
-  padding:10px;
-  border-radius:8px;
-  border:none;
-  background:#020617;
-  color:white;
-}
+        .title {
+            font-size: 12px;
+            color: var(--neon-green);
+            text-transform: uppercase;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+        }
 
-.todo-list{
-  margin-top:10px;
-}
+        /* Specific Card Sizing */
+        .deploy { grid-column: span 8; }
+        .calc { grid-column: span 4; }
+        .traffic { grid-column: span 4; }
+        .error { grid-column: span 4; }
+        .todo { grid-column: span 4; }
 
-.todo-item{
-  background:#020617;
-  padding:10px;
-  border-radius:8px;
-  margin-top:6px;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-}
+        /* Inputs & Buttons */
+        button {
+            background: transparent;
+            border: 1px solid var(--neon-green);
+            color: var(--neon-green);
+            padding: 8px 15px;
+            cursor: pointer;
+            text-transform: uppercase;
+            font-size: 11px;
+            transition: 0.2s;
+        }
 
-.todo-item span{cursor:pointer}
+        button:hover {
+            background: var(--neon-green);
+            color: #000;
+            box-shadow: var(--border-glow);
+        }
 
-.todo-item.done{
-  text-decoration:line-through;
-  opacity:0.5;
-}
+        input {
+            background: rgba(0,0,0,0.5);
+            border: 1px solid #004d30;
+            color: var(--neon-green);
+            padding: 10px;
+            width: 100%;
+            margin-bottom: 10px;
+        }
 
-/* CALCULATOR CLEAN */
-.calc-display{
-  background:#020617;
-  padding:12px;
-  border-radius:8px;
-  margin-bottom:10px;
-  text-align:right;
-  font-size:18px;
-}
+        /* Calculator Styling */
+        .calc-display {
+            background: #000;
+            padding: 15px;
+            text-align: right;
+            font-size: 20px;
+            border: 1px inset rgba(0, 255, 159, 0.2);
+            margin-bottom: 10px;
+            height: 55px;
+        }
 
-.calc-grid{
-  display:grid;
-  grid-template-columns:repeat(4,1fr);
-  gap:8px;
-}
+        .calc-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+        }
 
-.calc-grid button{
-  padding:14px;
-  border-radius:8px;
-  background:#1e293b;
-}
+        /* Task List */
+        .todo-list {
+            max-height: 200px;
+            overflow-y: auto;
+        }
 
-</style>
+        .todo-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px;
+            border-bottom: 1px solid rgba(0, 255, 159, 0.1);
+            font-size: 13px;
+        }
+
+        .done { color: #004d30; text-decoration: line-through; }
+
+        @media (max-width: 1100px) {
+            .deploy, .calc, .traffic, .error, .todo { grid-column: span 12; }
+            .sidebar { width: 180px; }
+        }
+    </style>
 </head>
 <body>
 
 <div class="sidebar">
-  <div class="logo">🚀 DevOps</div>
-  <div class="widget"><div class="widget-title">Status</div><div class="widget-value">Healthy</div></div>
-  <div class="widget"><div class="widget-title">Time</div><div id="clock" class="widget-value"></div></div>
-  <div class="widget"><div class="widget-title">Uptime</div><div id="uptime" class="widget-value">0</div></div>
-  <div class="widget"><div class="widget-title">Version</div><div id="version" class="widget-value">1</div></div>
+    <div class="brand">CORE_OS</div>
+    <div class="widget">
+        <div class="widget-title">SYSTEM STATUS</div>
+        <div class="widget-value" id="statusText">OPERATIONAL</div>
+    </div>
+    <div class="widget">
+        <div class="widget-title">LOCAL TIME</div>
+        <div id="clock" class="widget-value">00:00:00</div>
+    </div>
+    <div class="widget">
+        <div class="widget-title">UPTIME</div>
+        <div id="uptime" class="widget-value">00:00:00</div>
+    </div>
+    <div class="widget">
+        <div class="widget-title">PROCESS TIMER</div>
+        <div id="stopwatch" class="widget-value">00:00:00</div>
+        <div style="margin-top:10px; display: flex; gap: 5px;">
+            <button onclick="startSW()">RUN</button>
+            <button onclick="stopSW()">HALT</button>
+        </div>
+    </div>
 </div>
 
 <div class="main">
+    <div class="topbar">
+        <span>SESSION: ROOT@DEVOPS_NODE_01</span>
+        <span>SECURITY_LEVEL: ALPHA</span>
+    </div>
 
-<div class="topbar"><h2>Production Dashboard</h2></div>
+    <div class="content">
+        <div class="dashboard">
 
-<div class="content">
+            <div class="card deploy">
+                <div class="title"><span>SYSTEM_DEPLOYMENT_METRICS</span> <span>[LIVE]</span></div>
+                <div style="height: 250px;">
+                    <canvas id="chart1"></canvas>
+                </div>
+                <button onclick="deploy()" style="margin-top: 15px; width: 100%;">INITIALIZE NEW DEPLOYMENT</button>
+            </div>
 
-<div class="layout">
+            <div class="card calc">
+                <div class="title">MATH_CO-PROCESSOR</div>
+                <div id="calcDisplay" class="calc-display">0</div>
+                <div class="calc-grid">
+                    <button onclick="p('7')">7</button><button onclick="p('8')">8</button><button onclick="p('9')">9</button><button onclick="p('/')">/</button>
+                    <button onclick="p('4')">4</button><button onclick="p('5')">5</button><button onclick="p('6')">6</button><button onclick="p('*')">*</button>
+                    <button onclick="p('1')">1</button><button onclick="p('2')">2</button><button onclick="p('3')">3</button><button onclick="p('-')">-</button>
+                    <button onclick="p('0')">0</button><button onclick="calc()">=</button><button onclick="clr()">C</button><button onclick="p('+')">+</button>
+                </div>
+            </div>
 
-<div class="card">
-<div class="title">Deployment Trend</div>
-<canvas id="chart"></canvas>
-<button class="deploy-btn" onclick="deploy()">🚀 Deploy New Version</button>
-</div>
+            <div class="card traffic">
+                <div class="title">NETWORK_TRAFFIC</div>
+                <canvas id="chart2"></canvas>
+            </div>
 
-<div>
+            <div class="card error">
+                <div class="title">ERROR_LOG_FREQUENCE</div>
+                <canvas id="chart3"></canvas>
+            </div>
 
-<div class="card">
-<div class="title">Calculator</div>
-<div id="calcDisplay" class="calc-display">0</div>
-<div class="calc-grid">
-<button onclick="p('7')">7</button><button onclick="p('8')">8</button><button onclick="p('9')">9</button><button onclick="p('/')">÷</button>
-<button onclick="p('4')">4</button><button onclick="p('5')">5</button><button onclick="p('6')">6</button><button onclick="p('*')">×</button>
-<button onclick="p('1')">1</button><button onclick="p('2')">2</button><button onclick="p('3')">3</button><button onclick="p('-')">−</button>
-<button onclick="p('0')">0</button><button onclick="calc()">=</button><button onclick="clr()">C</button><button onclick="p('+')">+</button>
-</div>
-</div>
+            <div class="card todo">
+                <div class="title">EXECUTION_QUEUE</div>
+                <div style="display:flex; gap: 5px; margin-bottom: 10px;">
+                    <input id="todoInput" placeholder="CMD> Enter Task...">
+                    <button onclick="addTodo()">PUSH</button>
+                </div>
+                <div id="todoList" class="todo-list">
+                    </div>
+            </div>
 
-<div class="card" style="margin-top:15px">
-<div class="title">Tasks</div>
-<div class="todo-row">
-<input id="todoInput" placeholder="Add task...">
-<button onclick="addTodo()">Add</button>
-</div>
-<div id="todoList" class="todo-list"></div>
-</div>
-
-</div>
-
-</div>
-
-</div>
+        </div>
+    </div>
 </div>
 
 <script>
-// CLOCK
-let up=0;
-setInterval(()=>{
-  clock.innerText=new Date().toLocaleTimeString();
-  uptime.innerText=++up+'s';
-},1000);
+    // Universal Chart Config
+    Chart.defaults.color = '#00ff9f';
+    Chart.defaults.borderColor = 'rgba(0, 255, 159, 0.1)';
 
-// DEPLOY
-let v=localStorage.getItem('version')||1;
-version.innerText=v;
-function deploy(){
-  v++;
-  localStorage.setItem('version',v);
-  version.innerText=v;
-  chart.data.labels.push(chart.data.labels.length+1);
-  chart.data.datasets[0].data.push(v);
-  chart.update();
-}
+    let sec = 0;
+    setInterval(() => {
+        document.getElementById('clock').innerText = new Date().toLocaleTimeString();
+        sec++;
+        document.getElementById('uptime').innerText = format(sec);
+    }, 1000);
 
-// TODO FIXED
-function addTodo(){
-  let val=todoInput.value.trim();
-  if(!val) return;
-  let div=document.createElement('div');
-  div.className='todo-item';
-  div.innerHTML=`<span onclick="this.parentElement.classList.toggle('done')">${val}</span><button onclick="this.parentElement.remove()">✕</button>`;
-  todoList.appendChild(div);
-  todoInput.value='';
-}
+    function format(s) {
+        let h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), sec = s % 60;
+        return `${pad(h)}:${pad(m)}:${pad(sec)}`;
+    }
+    function pad(n) { return n < 10 ? '0' + n : n; }
 
-// CALC CLEAN
-let exp='';
-function p(x){exp+=x;calcDisplay.innerText=exp}
-function calc(){try{exp=eval(exp)+'';calcDisplay.innerText=exp}catch{exp='';calcDisplay.innerText='0'}}
-function clr(){exp='';calcDisplay.innerText='0'}
+    let sw = 0, swInt;
+    function startSW() { if (swInt) return; swInt = setInterval(() => { sw++; document.getElementById('stopwatch').innerText = format(sw) }, 1000) }
+    function stopSW() { clearInterval(swInt); swInt = null }
 
-// CHART
-const chart=new Chart(document.getElementById('chart'),{
- type:'line',
- data:{labels:[1,2,3],datasets:[{label:'Deployments',data:[1,2,3]}]}
-});
+    function deploy() {
+        const val = Math.floor(Math.random() * 10) + 1;
+        chart1.data.labels.push("");
+        chart1.data.datasets[0].data.push(val);
+        chart1.update();
+    }
+
+    function addTodo() {
+        let input = document.getElementById('todoInput');
+        if (!input.value) return;
+        let d = document.createElement('div');
+        d.className = 'todo-item';
+        d.innerHTML = `<span onclick="this.classList.toggle('done')">> ${input.value}</span><button onclick="this.parentElement.remove()" style="padding: 2px 5px; font-size: 8px;">DEL</button>`;
+        document.getElementById('todoList').prepend(d);
+        input.value = '';
+    }
+
+    let exp = '';
+    const calcDisp = document.getElementById('calcDisplay');
+    function p(x) { exp += x; calcDisp.innerText = exp; }
+    function calc() { try { exp = eval(exp) + ''; calcDisp.innerText = exp; } catch { exp = ''; calcDisp.innerText = 'ERR'; } }
+    function clr() { exp = ''; calcDisp.innerText = '0'; }
+
+    // Charts Initialization
+    const chart1 = new Chart(document.getElementById('chart1'), {
+        type: 'line',
+        data: {
+            labels: ['01', '02', '03', '04', '05'],
+            datasets: [{
+                label: 'DEPLOY_VOL',
+                data: [12, 19, 3, 5, 2],
+                borderColor: '#00ff9f',
+                tension: 0.4,
+                fill: true,
+                backgroundColor: 'rgba(0, 255, 159, 0.1)'
+            }]
+        },
+        options: { maintainAspectRatio: false }
+    });
+
+    new Chart(document.getElementById('chart2'), {
+        type: 'bar',
+        data: {
+            labels: ['NA', 'EU', 'AS'],
+            datasets: [{
+                label: 'TRAFFIC_GB',
+                data: [45, 82, 60],
+                backgroundColor: '#00ff9f'
+            }]
+        }
+    });
+
+    new Chart(document.getElementById('chart3'), {
+        type: 'line',
+        data: {
+            labels: ['10m', '5m', '1m'],
+            datasets: [{
+                label: 'ERR_RATE',
+                data: [1, 4, 2],
+                borderColor: '#ff0055',
+                backgroundColor: 'rgba(255, 0, 85, 0.1)',
+                fill: true
+            }]
+        }
+    });
 </script>
 
 </body>
