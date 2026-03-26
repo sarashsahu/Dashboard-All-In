@@ -1,1 +1,233 @@
-<h1>Hello from AKS DevOps Pipeline 🚀</h1>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DevOps Dashboard — Premium UI</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Inter',sans-serif}
+
+body{
+  display:flex;
+  background:#020617;
+  color:#e5e7eb;
+  height:100vh;
+}
+
+.sidebar{
+  width:260px;
+  padding:20px;
+  background:#020617;
+  border-right:1px solid rgba(255,255,255,0.05);
+}
+
+.logo{font-size:20px;font-weight:700;margin-bottom:20px}
+
+.widget{margin-bottom:15px;padding:12px;border-radius:10px;background:#0f172a}
+.widget-title{font-size:11px;opacity:0.6}
+.widget-value{font-size:16px;margin-top:4px}
+
+.main{flex:1;display:flex;flex-direction:column}
+
+.topbar{
+  padding:15px 20px;
+  border-bottom:1px solid rgba(255,255,255,0.05);
+}
+
+.content{padding:20px}
+
+.layout{
+  display:grid;
+  grid-template-columns:2fr 1fr;
+  gap:20px;
+}
+
+.card{
+  background:#0f172a;
+  border-radius:12px;
+  padding:16px;
+}
+
+.title{font-size:13px;opacity:0.6;margin-bottom:10px}
+
+button{
+  padding:8px 14px;
+  border:none;
+  border-radius:8px;
+  background:#6366f1;
+  color:white;
+  cursor:pointer;
+  font-size:13px;
+}
+
+button:hover{opacity:0.9}
+
+.deploy-btn{
+  margin-top:12px;
+  width:auto;
+  padding:8px 16px;
+  font-weight:600;
+}
+
+/* FIXED TODO */
+.todo-row{
+  display:flex;
+  gap:8px;
+}
+
+.todo-row input{
+  flex:1;
+  padding:10px;
+  border-radius:8px;
+  border:none;
+  background:#020617;
+  color:white;
+}
+
+.todo-list{
+  margin-top:10px;
+}
+
+.todo-item{
+  background:#020617;
+  padding:10px;
+  border-radius:8px;
+  margin-top:6px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+
+.todo-item span{cursor:pointer}
+
+.todo-item.done{
+  text-decoration:line-through;
+  opacity:0.5;
+}
+
+/* CALCULATOR CLEAN */
+.calc-display{
+  background:#020617;
+  padding:12px;
+  border-radius:8px;
+  margin-bottom:10px;
+  text-align:right;
+  font-size:18px;
+}
+
+.calc-grid{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:8px;
+}
+
+.calc-grid button{
+  padding:14px;
+  border-radius:8px;
+  background:#1e293b;
+}
+
+</style>
+</head>
+<body>
+
+<div class="sidebar">
+  <div class="logo">🚀 DevOps</div>
+  <div class="widget"><div class="widget-title">Status</div><div class="widget-value">Healthy</div></div>
+  <div class="widget"><div class="widget-title">Time</div><div id="clock" class="widget-value"></div></div>
+  <div class="widget"><div class="widget-title">Uptime</div><div id="uptime" class="widget-value">0</div></div>
+  <div class="widget"><div class="widget-title">Version</div><div id="version" class="widget-value">1</div></div>
+</div>
+
+<div class="main">
+
+<div class="topbar"><h2>Production Dashboard</h2></div>
+
+<div class="content">
+
+<div class="layout">
+
+<div class="card">
+<div class="title">Deployment Trend</div>
+<canvas id="chart"></canvas>
+<button class="deploy-btn" onclick="deploy()">🚀 Deploy New Version</button>
+</div>
+
+<div>
+
+<div class="card">
+<div class="title">Calculator</div>
+<div id="calcDisplay" class="calc-display">0</div>
+<div class="calc-grid">
+<button onclick="p('7')">7</button><button onclick="p('8')">8</button><button onclick="p('9')">9</button><button onclick="p('/')">÷</button>
+<button onclick="p('4')">4</button><button onclick="p('5')">5</button><button onclick="p('6')">6</button><button onclick="p('*')">×</button>
+<button onclick="p('1')">1</button><button onclick="p('2')">2</button><button onclick="p('3')">3</button><button onclick="p('-')">−</button>
+<button onclick="p('0')">0</button><button onclick="calc()">=</button><button onclick="clr()">C</button><button onclick="p('+')">+</button>
+</div>
+</div>
+
+<div class="card" style="margin-top:15px">
+<div class="title">Tasks</div>
+<div class="todo-row">
+<input id="todoInput" placeholder="Add task...">
+<button onclick="addTodo()">Add</button>
+</div>
+<div id="todoList" class="todo-list"></div>
+</div>
+
+</div>
+
+</div>
+
+</div>
+</div>
+
+<script>
+// CLOCK
+let up=0;
+setInterval(()=>{
+  clock.innerText=new Date().toLocaleTimeString();
+  uptime.innerText=++up+'s';
+},1000);
+
+// DEPLOY
+let v=localStorage.getItem('version')||1;
+version.innerText=v;
+function deploy(){
+  v++;
+  localStorage.setItem('version',v);
+  version.innerText=v;
+  chart.data.labels.push(chart.data.labels.length+1);
+  chart.data.datasets[0].data.push(v);
+  chart.update();
+}
+
+// TODO FIXED
+function addTodo(){
+  let val=todoInput.value.trim();
+  if(!val) return;
+  let div=document.createElement('div');
+  div.className='todo-item';
+  div.innerHTML=`<span onclick="this.parentElement.classList.toggle('done')">${val}</span><button onclick="this.parentElement.remove()">✕</button>`;
+  todoList.appendChild(div);
+  todoInput.value='';
+}
+
+// CALC CLEAN
+let exp='';
+function p(x){exp+=x;calcDisplay.innerText=exp}
+function calc(){try{exp=eval(exp)+'';calcDisplay.innerText=exp}catch{exp='';calcDisplay.innerText='0'}}
+function clr(){exp='';calcDisplay.innerText='0'}
+
+// CHART
+const chart=new Chart(document.getElementById('chart'),{
+ type:'line',
+ data:{labels:[1,2,3],datasets:[{label:'Deployments',data:[1,2,3]}]}
+});
+</script>
+
+</body>
+</html>
