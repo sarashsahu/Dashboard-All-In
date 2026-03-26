@@ -3,13 +3,15 @@ kind: Ingress
 metadata:
   name: myapp-ingress
   namespace: prod
+  annotations:
+    kubernetes.io/ingress.class: azure/application-gateway
+    appgw.ingress.kubernetes.io/backend-path-prefix: "/"
 spec:
-  ingressClassName: azure-application-gateway
   rules:
   - http:
       paths:
-      - path: /
-        pathType: Prefix
+      - path: /*
+        pathType: ImplementationSpecific
         backend:
           service:
             name: myapp-service
