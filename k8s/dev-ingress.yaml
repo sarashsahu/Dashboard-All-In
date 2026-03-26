@@ -6,7 +6,7 @@ metadata:
 spec:
   ingressClassName: azure-application-gateway
   rules:
-  - host: dev.local
+  - host: dev.spro.space
     http:
       paths:
       - path: /
