@@ -4,24 +4,42 @@ trigger:
 pool:
   name: self-hosted-pool
 
+variables:
+  ACR_NAME: sarashcr
+  AKS_NAME: aks
+  RG: sarash-devops
+
 stages:
 
+# ---------------- BUILD ----------------
 - stage: Build
   jobs:
   - job: Build
     steps:
     - script: |
-        docker build -t sarashcr.azurecr.io/myapp:latest .
-        docker push sarashcr.azurecr.io/myapp:latest
+        az login --identity
 
+        az acr login --name $ACR_NAME
+
+        docker build -t $ACR_NAME.azurecr.io/myapp:latest .
+        docker push $ACR_NAME.azurecr.io/myapp:latest
+      displayName: Build and Push Image
+
+# ---------------- DEV ----------------
 - stage: Deploy_Dev
   jobs:
   - job: Deploy
     steps:
     - script: |
+        az login --identity
+
+        az aks get-credentials --name $AKS_NAME --resource-group $RG --overwrite-existing
+
         kubectl create namespace dev --dry-run=client -o yaml | kubectl apply -f -
         kubectl apply -f dev-deploy.yaml
+      displayName: Deploy to Dev
 
+# ---------------- APPROVAL ----------------
 - stage: Approval
   jobs:
   - job: Wait
@@ -31,10 +49,16 @@ stages:
       inputs:
         instructions: "Approve deployment to PROD"
 
+# ---------------- PROD ----------------
 - stage: Deploy_Prod
   jobs:
   - job: Deploy
     steps:
     - script: |
+        az login --identity
+
+        az aks get-credentials --name $AKS_NAME --resource-group $RG --overwrite-existing
+
         kubectl create namespace prod --dry-run=client -o yaml | kubectl apply -f -
         kubectl apply -f prod-deploy.yaml
+      displayName: Deploy to Prod
