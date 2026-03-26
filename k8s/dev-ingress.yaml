@@ -3,6 +3,8 @@ kind: Ingress
 metadata:
   name: myapp-dev-ingress
   namespace: dev
+  annotations:
+    appgw.ingress.kubernetes.io/appgw-ssl-certificate: "spro-cert"
 spec:
   ingressClassName: azure-application-gateway
   rules:
