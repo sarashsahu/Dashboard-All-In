@@ -48,7 +48,7 @@ stages:
         az aks get-credentials --name $AKS_NAME --resource-group $RG --overwrite-existing
 
         kubectl create namespace dev --dry-run=client -o yaml | kubectl apply -f -
-        kubectl apply -f dev-deploy.yaml
+        kubectl apply -f $(System.DefaultWorkingDirectory)/k8s/dev.yaml
       displayName: Deploy to Dev
 
 # ---------------- APPROVAL BEFORE PROD ----------------
@@ -74,5 +74,5 @@ stages:
         az aks get-credentials --name $AKS_NAME --resource-group $RG --overwrite-existing
 
         kubectl create namespace prod --dry-run=client -o yaml | kubectl apply -f -
-        kubectl apply -f prod-deploy.yaml
+        kubectl apply -f $(System.DefaultWorkingDirectory)/k8s/prod.yaml
       displayName: Deploy to Prod
