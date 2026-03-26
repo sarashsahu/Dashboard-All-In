@@ -3,18 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TERMINAL // OS_v5.0_ELITE</title>
+    <title>TERMINAL // OS_v6.1</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
 
     <style>
         :root {
+            --cyan: #00e5ff;
+            --cyan-dim: rgba(0, 229, 255, 0.15);
             --neon-green: #00ff9f;
-            --neon-green-dim: rgba(0, 255, 159, 0.2);
             --neon-red: #ff0055;
-            --dark-bg: #050505;
-            --panel-bg: #0a0f0d;
-            --border-glow: 0 0 15px rgba(0, 255, 159, 0.3);
+            --dark-bg: #03060a;
+            --panel-bg: rgba(5, 10, 15, 0.7);
+            --border-glow: 0 0 15px rgba(0, 229, 255, 0.4);
         }
 
         * {
@@ -24,235 +25,182 @@
 
         body {
             background-color: var(--dark-bg);
-            color: var(--neon-green);
+            color: var(--cyan);
             height: 100vh;
             display: flex;
             overflow: hidden;
-            background-image: radial-gradient(circle at center, #021a12 0%, #000000 100%);
+            background-image: 
+                radial-gradient(circle at top right, rgba(0, 229, 255, 0.05) 0%, transparent 40%),
+                radial-gradient(circle at bottom left, rgba(0, 255, 159, 0.05) 0%, transparent 40%);
         }
 
-        /* CRT Scanline Overlay */
+        /* CRT Overlay & Grid */
         body::after {
             content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: repeating-linear-gradient(0deg, rgba(0,0,0,0.15), rgba(0,0,0,0.15) 1px, transparent 1px, transparent 2px);
+            background: 
+                linear-gradient(rgba(0, 229, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 229, 255, 0.03) 1px, transparent 1px),
+                repeating-linear-gradient(0deg, rgba(0,0,0,0.15), rgba(0,0,0,0.15) 1px, transparent 1px, transparent 2px);
+            background-size: 30px 30px, 30px 30px, 100% 100%;
             pointer-events: none; z-index: 100;
         }
 
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: #000; }
-        ::-webkit-scrollbar-thumb { background: var(--neon-green-dim); border: 1px solid var(--neon-green); }
+        ::-webkit-scrollbar-thumb { background: var(--cyan); }
 
         /* Sidebar */
         .sidebar {
             width: 280px;
-            background: rgba(0, 0, 0, 0.8);
-            border-right: 1px solid var(--neon-green-dim);
+            background: rgba(0, 5, 10, 0.9);
+            border-right: 1px solid var(--cyan-dim);
             padding: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
+            display: flex; flex-direction: column; gap: 20px;
             z-index: 10;
-            box-shadow: 5px 0 15px rgba(0,0,0,0.5);
+            backdrop-filter: blur(10px);
         }
 
         .brand {
-            font-size: 1.5rem;
-            letter-spacing: 2px;
-            text-shadow: 0 0 10px var(--neon-green);
-            border-bottom: 2px solid var(--neon-green);
-            padding-bottom: 10px;
-            text-align: center;
+            font-size: 1.6rem; letter-spacing: 2px;
+            text-shadow: 0 0 10px var(--cyan);
+            border-bottom: 2px solid var(--cyan);
+            padding-bottom: 10px; text-align: center;
         }
 
         .widget {
-            border: 1px solid var(--neon-green-dim);
-            padding: 15px;
-            background: var(--panel-bg);
+            border: 1px solid var(--cyan-dim);
+            padding: 15px; background: rgba(0, 0, 0, 0.5);
             transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
         }
-        .widget:hover { box-shadow: var(--border-glow); border-color: var(--neon-green); }
+        .widget::before {
+            content: ''; position: absolute; top: 0; left: -100%; width: 50%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0,229,255,0.1), transparent);
+            transition: 0.5s;
+        }
+        .widget:hover::before { left: 100%; }
+        .widget:hover { box-shadow: var(--border-glow); border-color: var(--cyan); }
 
-        .widget-title { font-size: 10px; opacity: 0.7; text-transform: uppercase; letter-spacing: 1px; }
-        .widget-value { font-size: 1.3rem; margin-top: 5px; color: #fff; text-shadow: 0 0 5px rgba(255,255,255,0.5); }
+        .widget-title { font-size: 10px; opacity: 0.7; text-transform: uppercase; color: #fff; }
+        .widget-value { font-size: 1.3rem; margin-top: 5px; color: var(--cyan); text-shadow: 0 0 5px var(--cyan); }
 
         /* Main Area */
         .main { flex: 1; display: flex; flex-direction: column; position: relative; }
 
         .topbar {
-            padding: 15px 30px;
-            background: rgba(0, 255, 159, 0.05);
-            border-bottom: 1px solid var(--neon-green-dim);
-            display: flex; justify-content: space-between; font-size: 13px;
-            letter-spacing: 1px;
+            padding: 15px 30px; background: rgba(0, 229, 255, 0.05);
+            border-bottom: 1px solid var(--cyan-dim);
+            display: flex; justify-content: space-between; font-size: 12px;
+            backdrop-filter: blur(5px);
         }
+        .status-dot { display: inline-block; width: 8px; height: 8px; background: var(--neon-green); border-radius: 50%; box-shadow: 0 0 8px var(--neon-green); margin-right: 8px; animation: pulse 2s infinite; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
 
         .content { padding: 30px; overflow-y: auto; flex: 1; }
 
-        /* Grid */
+        /* Dashboard Grid */
         .dashboard {
-            display: grid;
-            grid-template-columns: repeat(12, 1fr);
-            gap: 25px;
-            max-width: 1600px;
-            margin: 0 auto;
+            display: grid; grid-template-columns: repeat(12, 1fr); gap: 20px; max-width: 1600px; margin: 0 auto;
         }
 
         .card {
-            background: var(--panel-bg);
-            border: 1px solid var(--neon-green-dim);
-            padding: 20px;
-            position: relative;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-            display: flex;
-            flex-direction: column;
+            background: var(--panel-bg); border: 1px solid var(--cyan-dim);
+            padding: 20px; position: relative; box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            display: flex; flex-direction: column; backdrop-filter: blur(8px);
         }
 
-        .card::before {
-            content: ""; position: absolute; top: -1px; left: -1px; width: 20px; height: 20px;
-            border-top: 2px solid var(--neon-green); border-left: 2px solid var(--neon-green);
-        }
-        .card::after {
-            content: ""; position: absolute; bottom: -1px; right: -1px; width: 20px; height: 20px;
-            border-bottom: 2px solid var(--neon-green); border-right: 2px solid var(--neon-green);
-        }
+        .card::before { content: ""; position: absolute; top: -1px; left: -1px; width: 15px; height: 15px; border-top: 2px solid var(--cyan); border-left: 2px solid var(--cyan); }
+        .card::after { content: ""; position: absolute; bottom: -1px; right: -1px; width: 15px; height: 15px; border-bottom: 2px solid var(--cyan); border-right: 2px solid var(--cyan); }
 
-        .title {
-            font-size: 12px;
-            letter-spacing: 2px;
-            margin-bottom: 20px;
-            color: var(--neon-green);
-            border-left: 4px solid var(--neon-green);
-            padding-left: 10px;
-            text-transform: uppercase;
-        }
+        .title { font-size: 12px; letter-spacing: 2px; margin-bottom: 20px; color: #fff; border-left: 3px solid var(--cyan); padding-left: 10px; }
 
-        /* Column Span Logic */
-        .col-8 { grid-column: span 8; }
-        .col-4 { grid-column: span 4; }
-        .col-12 { grid-column: span 12; }
+        .col-8 { grid-column: span 8; } .col-4 { grid-column: span 4; }
 
-        /* Buttons & Inputs */
-        .btn-group { display: flex; gap: 8px; }
-        
+        /* UI Elements */
         button {
-            background: transparent;
-            border: 1px solid var(--neon-green);
-            color: var(--neon-green);
-            padding: 8px 15px;
-            cursor: pointer;
-            font-size: 11px;
-            font-weight: bold;
-            letter-spacing: 1px;
-            transition: all 0.2s;
+            background: rgba(0, 229, 255, 0.05); border: 1px solid var(--cyan); color: var(--cyan);
+            padding: 8px 15px; cursor: pointer; font-size: 11px; font-weight: bold; transition: 0.2s;
             text-transform: uppercase;
         }
-
-        button:hover {
-            background: var(--neon-green);
-            color: #000;
-            box-shadow: 0 0 10px var(--neon-green);
-        }
-
+        button:hover { background: var(--cyan); color: #000; box-shadow: 0 0 10px var(--cyan); }
         button.danger { border-color: var(--neon-red); color: var(--neon-red); }
         button.danger:hover { background: var(--neon-red); color: #000; box-shadow: 0 0 10px var(--neon-red); }
 
-        input {
-            background: #000; border: 1px solid var(--neon-green-dim);
-            color: var(--neon-green); padding: 10px; width: 100%; outline: none;
-            transition: border 0.3s;
-        }
-        input:focus { border-color: var(--neon-green); box-shadow: var(--border-glow); }
+        input { background: rgba(0,0,0,0.8); border: 1px solid var(--cyan-dim); color: var(--cyan); padding: 10px; width: 100%; outline: none; transition: 0.3s; }
+        input:focus { border-color: var(--cyan); box-shadow: var(--border-glow); }
 
-        /* Calculator */
+        /* Calculator Specifics */
         .calc-display {
-            background: #000; padding: 15px; text-align: right;
-            font-size: 24px; border: 1px solid var(--neon-green-dim);
+            background: rgba(0,0,0,0.8); padding: 15px; text-align: right;
+            font-size: 24px; border: 1px solid var(--cyan-dim);
             margin-bottom: 15px; min-height: 60px; color: #fff;
             letter-spacing: 2px;
         }
         .calc-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
 
-        /* Todo List */
+        /* Queue Specifics */
         .todo-item {
             display: flex; align-items: center; justify-content: space-between;
-            padding: 10px; border-bottom: 1px solid var(--neon-green-dim);
-            background: rgba(0,0,0,0.3); margin-bottom: 5px;
+            padding: 10px; border: 1px solid rgba(0,0,0,0); border-bottom: 1px solid var(--cyan-dim); background: rgba(0,0,0,0.4); margin-bottom: 5px; transition: 0.2s;
         }
-        .todo-text { cursor: pointer; flex: 1; transition: 0.3s; font-size: 13px; }
-        .todo-text.done { color: #005536; text-decoration: line-through; opacity: 0.5; }
+        .todo-item:hover { border: 1px solid var(--cyan-dim); background: rgba(0, 229, 255, 0.05); }
+        .todo-text { cursor: pointer; flex: 1; font-size: 12px; }
+        .todo-text.done { color: #555; text-decoration: line-through; }
 
-        /* Console Log Footer */
         .console {
-            height: 150px;
-            background: #000;
-            border-top: 1px solid var(--neon-green);
-            padding: 15px 30px;
-            font-size: 12px;
-            overflow-y: auto;
-            color: #00b377;
-            box-shadow: inset 0 10px 20px rgba(0,0,0,0.8);
+            height: 160px; background: rgba(0,0,0,0.9); border-top: 1px solid var(--cyan);
+            padding: 15px 30px; font-size: 12px; overflow-y: auto; color: var(--neon-green);
         }
-        .console div { margin-bottom: 4px; }
-        .log-warn { color: #ffcc00; }
-        .log-err { color: var(--neon-red); }
+        .console div { margin-bottom: 5px; font-family: monospace; }
+        .log-warn { color: #ffcc00; } .log-err { color: var(--neon-red); } .log-sys { color: var(--cyan); }
 
-        @media (max-width: 1200px) {
-            .col-8 { grid-column: span 12; }
-            .col-4 { grid-column: span 6; }
-        }
-        @media (max-width: 800px) {
-            .col-4 { grid-column: span 12; }
-            .sidebar { display: none; }
-        }
+        @media (max-width: 1200px) { .col-8, .col-4 { grid-column: span 12; } }
+        @media (max-width: 800px) { .sidebar { display: none; } }
     </style>
 </head>
 <body>
 
 <div class="sidebar">
-    <div class="brand">SYS_ADMIN</div>
+    <div class="brand">! ADMIN@CORE</div>
     
     <div class="widget">
-        <div class="widget-title">KERNEL_STATUS</div>
-        <div class="widget-value" id="statusText">STABLE</div>
-    </div>
-
-    <div class="widget">
-        <div class="widget-title">LOCAL_TIME</div>
-        <div id="clock" class="widget-value">00:00:00</div>
-    </div>
-
-    <div class="widget">
-        <div class="widget-title">SERVER_UPTIME</div>
-        <div id="uptime" class="widget-value">CONNECTING...</div>
-    </div>
-
-    <div class="widget">
-        <div class="widget-title">MANUAL_OVERRIDE (SW)</div>
-        <div id="stopwatch" class="widget-value" style="color:var(--neon-green)">00:00:00</div>
-        <div class="btn-group" style="margin-top:15px">
-            <button onclick="startSW()">STRT</button>
-            <button onclick="stopSW()">HALT</button>
-            <button onclick="resetSW()" class="danger">RST</button>
+        <div class="widget-title">CONNECTION</div>
+        <div class="widget-value" id="statusText" style="color:var(--neon-green);">
+            <span class="status-dot"></span>LINK ESTABLISHED
         </div>
+    </div>
+
+    <div class="widget">
+        <div class="widget-title">SERVER UPTIME</div>
+        <div id="uptime" class="widget-value">SYNCING...</div>
+    </div>
+
+    <div class="widget">
+        <div class="widget-title">ACTIVE USERS</div>
+        <div id="activeUsers" class="widget-value">0</div>
+    </div>
+
+    <div class="widget">
+        <div class="widget-title">EMERGENCY PROTOCOL</div>
+        <button onclick="logError('MANUAL OVERRIDE TRIGGERED');" class="danger" style="width: 100%; margin-top: 10px;">PURGE CACHE</button>
     </div>
 </div>
 
 <div class="main">
     <div class="topbar">
-        <span>ID: SEC_ALPHA_9 // NODE: 127.0.0.1</span>
-        <span id="deployStatusBanner">AWAITING DEPLOYMENT DATA...</span>
-        <span>ENCRYPTION: AES-256-GCM</span>
+        <span>NODE: NEXUS-PROD-01 // IP: [REDACTED]</span>
+        <span id="deployStatusBanner" style="color: var(--neon-green);">STATUS: MONITORING LIVE TRAFFIC</span>
+        <span>PROTOCOL: WSS://SECURE</span>
     </div>
 
     <div class="content">
         <div class="dashboard">
             <div class="card col-8">
-                <div class="title">LIVE_DEPLOYMENT_TRACKER</div>
+                <div class="title">LIVE SERVER METRICS (TRAFFIC)</div>
                 <div style="flex-grow: 1; min-height: 250px; position: relative;">
                     <canvas id="deployChart"></canvas>
                 </div>
-                <button onclick="simulateDeploymentEvent()" style="width: 100%; margin-top: 20px;">[TEST] SIMULATE INCOMING DEPLOYMENT</button>
             </div>
 
             <div class="card col-4">
@@ -267,239 +215,214 @@
             </div>
 
             <div class="card col-4">
-                <div class="title">SYS_RESOURCES</div>
+                <div class="title">HARDWARE RESOURCES</div>
                 <div style="position: relative; height: 200px; width: 100%;">
                     <canvas id="chart2"></canvas>
                 </div>
             </div>
 
             <div class="card col-4">
-                <div class="title">THREAT_LEVELS</div>
+                <div class="title">THREAT ANALYSIS</div>
                 <div style="position: relative; height: 200px; width: 100%;">
                     <canvas id="chart3"></canvas>
                 </div>
             </div>
 
             <div class="card col-4">
-                <div class="title">PROCESS_QUEUE</div>
+                <div class="title">PROCESS QUEUE (PERSISTENT)</div>
                 <div style="display:flex; gap: 10px; margin-bottom: 15px;">
-                    <input id="todoInput" placeholder="Enter Command..." onkeypress="if(event.key === 'Enter') addTodo()">
-                    <button onclick="addTodo()">PUSH</button>
+                    <input id="todoInput" placeholder="Enter process command..." onkeypress="if(event.key === 'Enter') addTodo()">
+                    <button onclick="addTodo()">EXEC</button>
+                    <button onclick="clearCompletedTasks()" class="danger">CLN</button>
                 </div>
-                <div id="todoList" style="flex-grow: 1; overflow-y: auto;"></div>
+                <div id="todoList" style="flex-grow: 1; overflow-y: auto; max-height: 140px;"></div>
             </div>
         </div>
     </div>
 
     <div class="console" id="consoleLog">
-        <div>[SYSTEM] Initializing OS_v5.0...</div>
-        <div>[AUTH] Handshake verified for ROOT...</div>
+        <div class="log-sys">[SYSTEM] Booting NEXUS OS_v6.1...</div>
+        <div class="log-sys">[NET] Establishing socket connection to server...</div>
+        <div class="log-sys">[PROC] Co-processor module loaded and initialized.</div>
     </div>
 </div>
 
 <script>
-    // --- Global Chart Config ---
-    Chart.defaults.color = '#00ff9f';
-    Chart.defaults.borderColor = 'rgba(0, 255, 159, 0.1)';
+    Chart.defaults.color = '#00e5ff';
+    Chart.defaults.borderColor = 'rgba(0, 229, 255, 0.1)';
     Chart.defaults.font.family = "'Share Tech Mono', monospace";
 
-    // --- Time & REAL Uptime Logic ---
-    let serverStartTime = null; 
-
-    // MOCK API Call: Fetch real server boot time
-    async function fetchServerUptime() {
-        try {
-            // REPLACE THIS with your actual API call, e.g.:
-            // const response = await fetch('/api/uptime');
-            // const data = await response.json();
-            // serverStartTime = data.bootTimestamp; 
-            
-            // For now, we pretend the server started 3 days, 4 hours, and 12 mins ago
-            serverStartTime = Date.now() - (274320 * 1000); 
-            log("Server connection established. Syncing uptime clock...");
-        } catch (e) {
-            logError("Failed to fetch server uptime.");
-        }
-    }
-
-    setInterval(() => {
-        // Update Local Clock
-        document.getElementById('clock').innerText = new Date().toLocaleTimeString('en-GB');
-        
-        // Update Server Uptime based on fetched boot time
-        if (serverStartTime) {
-            let currentUptimeSecs = Math.floor((Date.now() - serverStartTime) / 1000);
-            document.getElementById('uptime').innerText = format(currentUptimeSecs);
-        }
-    }, 1000);
-
-    function format(s) {
-        let d = Math.floor(s / 86400);
-        let h = Math.floor((s % 86400) / 3600);
-        let m = Math.floor((s % 3600) / 60);
-        let sec = s % 60;
-        return `${d}d ${pad(h)}:${pad(m)}:${pad(sec)}`;
-    }
-    function pad(n) { return n < 10 ? '0' + n : n; }
-
-    // --- Real Deployment Polling Logic ---
-    let deployCheckInterval;
-    
-    async function pollDeploymentStatus() {
-        try {
-            // REPLACE THIS with your real CI/CD API (e.g., GitHub Actions API, Vercel API)
-            // const res = await fetch('https://api.yourserver.com/deployments/latest');
-            // const deployData = await res.json();
-            
-            // For demonstration, we'll just log that we are listening
-            // In reality, you'd check if deployData.status == "building" or "success"
-            // and update the chart dynamically.
-        } catch (e) {
-            logError("Deployment telemetry lost.");
-        }
-    }
-
-    // --- Stopwatch Logic ---
-    let sw = 0, swInt = null;
-    function startSW() { if(swInt) return; swInt = setInterval(() => { sw++; document.getElementById('stopwatch').innerText = format(sw) }, 1000) }
-    function stopSW() { clearInterval(swInt); swInt = null; }
-    function resetSW() { stopSW(); sw = 0; document.getElementById('stopwatch').innerText = "00:00:00"; log("Stopwatch reset."); }
-
-    // --- Todo / Process Logic ---
-    function addTodo() {
-        let input = document.getElementById('todoInput');
-        if (!input.value) return;
-        let id = Date.now();
-        let d = document.createElement('div');
-        d.className = 'todo-item';
-        d.innerHTML = `
-            <span class="todo-text" id="t-${id}" onclick="toggleDone('t-${id}')">> ${input.value}</span>
-            <button onclick="this.parentElement.remove()" class="danger" style="padding: 2px 8px;">X</button>
-        `;
-        document.getElementById('todoList').prepend(d);
-        log(`Process queued: ${input.value}`);
-        input.value = '';
-    }
-    function toggleDone(id) {
-        document.getElementById(id).classList.toggle('done');
-        log("Process execution state modified.");
-    }
-
-    // --- Calc Logic ---
+    /* =========================================
+       1. CALCULATOR LOGIC
+       ========================================= */
     let exp = '';
     const calcDisp = document.getElementById('calcDisplay');
     function p(x) { exp += x; calcDisp.innerText = exp; }
     function clr() { exp = ''; calcDisp.innerText = '0'; }
     function calc() {
         try { 
-            // Warning: eval() used for aesthetic demo. Use a math parser for prod.
             exp = eval(exp) + ''; 
             calcDisp.innerText = exp; 
-            log("Co-processor cycle complete."); 
+            log("Co-processor cycle complete.", "sys"); 
         } 
-        catch { exp = ''; calcDisp.innerText = 'SYNTAX_ERR'; logError("Co-processor fault."); }
+        catch { exp = ''; calcDisp.innerText = 'ERR'; logError("Co-processor syntax fault."); }
     }
 
-    // --- Console Logging System ---
-    function log(msg, type="info") {
-        const con = document.getElementById('consoleLog');
-        const div = document.createElement('div');
-        let timestamp = new Date().toLocaleTimeString('en-GB');
-        
-        div.innerText = `[${timestamp}] ${msg}`;
-        if (type === "warn") div.className = "log-warn";
-        if (type === "err") div.className = "log-err";
-        
-        con.appendChild(div);
-        // Auto-scroll to bottom smoothly
-        con.scrollTo({ top: con.scrollHeight, behavior: 'smooth' });
+    /* =========================================
+       2. PERSISTENT PROCESS QUEUE (localStorage)
+       ========================================= */
+    let tasks = JSON.parse(localStorage.getItem('nexus_tasks')) || [
+        { id: 1, text: "Initialize database indexing", done: false }
+    ];
+
+    function renderTasks() {
+        const list = document.getElementById('todoList');
+        list.innerHTML = '';
+        tasks.forEach(t => {
+            const d = document.createElement('div');
+            d.className = 'todo-item';
+            d.innerHTML = `
+                <span class="todo-text ${t.done ? 'done' : ''}" onclick="toggleDone(${t.id})">> ${t.text}</span>
+                <button onclick="deleteTask(${t.id})" class="danger" style="padding: 2px 8px;">DEL</button>
+            `;
+            list.appendChild(d);
+        });
+        localStorage.setItem('nexus_tasks', JSON.stringify(tasks));
     }
-    function logWarn(msg) { log(msg, "warn"); }
-    function logError(msg) { log(msg, "err"); }
 
-    // Ambient background logs
-    setInterval(() => {
-        const msgs = ["Packet inspected via port 443.", "Buffer flush complete.", "Node check-in: SUCCESS", "Encrypted handshake stable."];
-        if (Math.random() > 0.5) log(msgs[Math.floor(Math.random()*msgs.length)]);
-    }, 12000);
+    function addTodo() {
+        const input = document.getElementById('todoInput');
+        if (!input.value.trim()) return;
+        tasks.unshift({ id: Date.now(), text: input.value, done: false });
+        input.value = '';
+        log(`Task added to local state.`, 'sys');
+        renderTasks();
+    }
 
-    // --- Charts ---
+    function toggleDone(id) {
+        const task = tasks.find(t => t.id === id);
+        if (task) {
+            task.done = !task.done;
+            renderTasks();
+        }
+    }
+
+    function deleteTask(id) {
+        tasks = tasks.filter(t => t.id !== id);
+        log(`Task deleted from local state.`, 'warn');
+        renderTasks();
+    }
+
+    function clearCompletedTasks() {
+        tasks = tasks.filter(t => !t.done);
+        log(`Completed tasks purged.`, 'sys');
+        renderTasks();
+    }
     
-    // Deployment Chart
+    renderTasks(); // Initial load
+
+    /* =========================================
+       3. SERVER DATA POLLING & LOGIC
+       ========================================= */
+    let serverStartTime = Date.now() - (86400 * 1000 * 2); // Fallback: 2 days ago
+
+    // Setup Charts
     const deployCtx = document.getElementById('deployChart').getContext('2d');
     const deployChart = new Chart(deployCtx, {
         type: 'line',
         data: {
-            labels: ['T-4m', 'T-3m', 'T-2m', 'T-1m', 'NOW'],
+            labels: ['T-40s', 'T-30s', 'T-20s', 'T-10s', 'NOW'],
             datasets: [{ 
-                label: 'DEPLOYMENT_ACTIVITY', 
-                data: [0, 0, 5, 0, 0], 
-                borderColor: '#00ff9f', 
-                backgroundColor: 'rgba(0,255,159,0.15)', 
-                fill: true,
-                tension: 0.3,
-                borderWidth: 2,
-                pointBackgroundColor: '#fff',
-                pointRadius: 3
+                label: 'SERVER REQUESTS /s', 
+                data: [10, 15, 12, 18, 14], 
+                borderColor: '#00e5ff', 
+                backgroundColor: 'rgba(0, 229, 255, 0.1)', 
+                fill: true, tension: 0.4, borderWidth: 2, pointRadius: 0
             }]
         },
-        options: { 
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-                y: { beginAtZero: true, max: 100 }
-            },
-            animation: { duration: 800, easing: 'easeOutQuart' }
-        }
+        options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, max: 200 } }, animation: { duration: 0 } }
     });
 
-    // Simulated Deployment Event Function
-    function simulateDeploymentEvent() {
-        // Shift data left
-        deployChart.data.datasets[0].data.shift();
-        
-        // Push a spike (simulating network/build activity)
-        let spike = Math.floor(Math.random() * 60) + 40;
-        deployChart.data.datasets[0].data.push(spike);
-        
-        // Keep labels static length
-        deployChart.update();
-        
-        document.getElementById('deployStatusBanner').innerText = "STATUS: DEPLOYMENT IN PROGRESS...";
-        document.getElementById('deployStatusBanner').style.color = "#ffcc00";
-        logWarn("Deployment payload detected! Initiating build sequence...");
-        
-        // Cooldown simulation
-        setTimeout(() => {
-            document.getElementById('deployStatusBanner').innerText = "STATUS: STANDBY";
-            document.getElementById('deployStatusBanner').style.color = "var(--neon-green)";
-            log("Deployment verified. Server running new build.");
-        }, 3000);
-    }
-
-    // Resource Doughnut
-    new Chart(document.getElementById('chart2'), {
+    const resourceChart = new Chart(document.getElementById('chart2'), {
         type: 'doughnut',
-        data: { labels: ['CPU', 'RAM', 'DISK'], datasets: [{ data: [45, 60, 25], backgroundColor: ['#00ff9f', '#008f5d', '#004d30'], borderWidth: 0 }] },
-        options: { responsive: true, maintainAspectRatio: false, cutout: '75%', plugins: { legend: { position: 'bottom' } } }
+        data: { labels: ['CPU', 'RAM', 'DISK'], datasets: [{ data: [10, 20, 30], backgroundColor: ['#00e5ff', '#00ff9f', '#114455'], borderWidth: 0 }] },
+        options: { responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: { position: 'bottom' } } }
     });
 
-    // Threat Radar
-    new Chart(document.getElementById('chart3'), {
+    const threatChart = new Chart(document.getElementById('chart3'), {
         type: 'radar',
         data: {
-            labels: ['SQLI', 'XSS', 'DDOS', 'BRUTE'],
-            datasets: [{ label: 'RISK', data: [15, 30, 10, 85], borderColor: '#ff0055', backgroundColor: 'rgba(255,0,85,0.2)', pointBackgroundColor: '#ff0055' }]
+            labels: ['DDoS', 'XSS', 'SQLi', 'Brute'],
+            datasets: [{ label: 'RISK', data: [5, 5, 5, 5], borderColor: '#ff0055', backgroundColor: 'rgba(255,0,85,0.2)', pointBackgroundColor: '#ff0055' }]
         },
-        options: { responsive: true, maintainAspectRatio: false, scales: { r: { angleLines: { color: 'rgba(0,255,159,0.2)' }, grid: { color: 'rgba(0,255,159,0.2)' }, pointLabels: { color: '#00ff9f' } } } }
+        options: { responsive: true, maintainAspectRatio: false, scales: { r: { min: 0, max: 100, ticks: {display: false} } } }
     });
 
-    // Initialize
-    window.onload = () => {
-        fetchServerUptime();
-        // Start polling for real deployments every 10 seconds
-        deployCheckInterval = setInterval(pollDeploymentStatus, 10000); 
-    };
+    // Main Polling Loop
+    async function fetchServerMetrics() {
+        try {
+            // Placeholder API fetch
+            const response = await fetch('/api/metrics');
+            if (!response.ok) throw new Error("API unreachable");
+            const data = await response.json();
+        } catch (error) {
+            simulateRealtimeData();
+        }
+    }
+
+    function simulateRealtimeData() {
+        let uptimeSecs = Math.floor((Date.now() - serverStartTime) / 1000);
+        let d = Math.floor(uptimeSecs / 86400), h = Math.floor((uptimeSecs % 86400) / 3600), m = Math.floor((uptimeSecs % 3600) / 60);
+        document.getElementById('uptime').innerText = `${d}d ${h<10?'0'+h:h}:${m<10?'0'+m:m}:${uptimeSecs%60<10?'0'+(uptimeSecs%60):uptimeSecs%60}`;
+
+        let baseTraffic = Math.floor(Math.random() * 30) + 10;
+        let isHighTraffic = Math.random() > 0.85; 
+        if (isHighTraffic) baseTraffic += 120; 
+
+        document.getElementById('activeUsers').innerText = baseTraffic * 12;
+
+        deployChart.data.datasets[0].data.shift();
+        deployChart.data.datasets[0].data.push(baseTraffic);
+        deployChart.update();
+
+        let cpu = isHighTraffic ? Math.floor(Math.random() * 20) + 75 : Math.floor(Math.random() * 20) + 10;
+        let ram = isHighTraffic ? Math.floor(Math.random() * 20) + 60 : Math.floor(Math.random() * 10) + 40;
+        resourceChart.data.datasets[0].data = [cpu, ram, 35];
+        resourceChart.update();
+
+        let ddosThreat = isHighTraffic ? 95 : Math.floor(Math.random() * 15);
+        let bruteThreat = Math.floor(Math.random() * 20);
+        threatChart.data.datasets[0].data = [ddosThreat, 10, 5, bruteThreat];
+        threatChart.update();
+
+        if (isHighTraffic) {
+            logWarn(`[ALERT] High traffic anomaly detected. CPU load at ${cpu}%.`);
+            document.getElementById('deployStatusBanner').innerText = "STATUS: LOAD BALANCING...";
+            document.getElementById('deployStatusBanner').style.color = "#ffcc00";
+        } else {
+            document.getElementById('deployStatusBanner').innerText = "STATUS: MONITORING LIVE TRAFFIC";
+            document.getElementById('deployStatusBanner').style.color = "var(--neon-green)";
+        }
+    }
+
+    /* =========================================
+       4. LOGGING SYSTEM
+       ========================================= */
+    function log(msg, type="info") {
+        const con = document.getElementById('consoleLog');
+        const div = document.createElement('div');
+        div.innerText = `[${new Date().toLocaleTimeString('en-GB')}] ${msg}`;
+        if (type === "warn") div.className = "log-warn";
+        if (type === "err") div.className = "log-err";
+        if (type === "sys") div.className = "log-sys";
+        
+        con.appendChild(div);
+        con.scrollTop = con.scrollHeight;
+    }
+    function logWarn(msg) { log(msg, "warn"); }
+    function logError(msg) { log(msg, "err"); }
+
+    setInterval(fetchServerMetrics, 2000);
 
 </script>
 
