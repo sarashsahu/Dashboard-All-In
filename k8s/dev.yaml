@@ -16,6 +16,7 @@ spec:
       containers:
       - name: myapp
         image: sarashcr.azurecr.io/myapp:latest
+        imagePullPolicy: Always
         ports:
         - containerPort: 80
 ---

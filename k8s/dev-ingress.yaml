@@ -3,15 +3,14 @@ kind: Ingress
 metadata:
   name: myapp-dev-ingress
   namespace: dev
-  annotations:
-    kubernetes.io/ingress.class: azure/application-gateway
-    appgw.ingress.kubernetes.io/rewrite-target: /
 spec:
+  ingressClassName: azure-application-gateway
   rules:
-  - http:
+  - host: dev.local
+    http:
       paths:
-      - path: /dev/*
-        pathType: ImplementationSpecific
+      - path: /
+        pathType: Prefix
         backend:
           service:
             name: myapp-service

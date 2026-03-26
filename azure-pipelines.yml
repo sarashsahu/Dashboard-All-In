@@ -11,21 +11,19 @@ variables:
 
 stages:
 
-# ---------------- BUILD ----------------
+# BUILD
 - stage: Build
   jobs:
   - job: Build
     steps:
     - script: |
         az login --identity
-
         az acr login --name $ACR_NAME
 
         docker build -t $ACR_NAME.azurecr.io/myapp:latest .
         docker push $ACR_NAME.azurecr.io/myapp:latest
-      displayName: Build and Push Image
 
-# ---------------- APPROVAL BEFORE DEV ----------------
+# APPROVAL DEV
 - stage: Approval_Dev
   dependsOn: Build
   jobs:
@@ -34,9 +32,9 @@ stages:
     steps:
     - task: ManualValidation@0
       inputs:
-        instructions: "Approve deployment to DEV environment"
+        instructions: "Check and Approve deployment to DEV env."
 
-# ---------------- DEV DEPLOY ----------------
+# DEPLOY DEV
 - stage: Deploy_Dev
   dependsOn: Approval_Dev
   jobs:
@@ -44,14 +42,13 @@ stages:
     steps:
     - script: |
         az login --identity
-
         az aks get-credentials --name $AKS_NAME --resource-group $RG --overwrite-existing
 
         kubectl create namespace dev --dry-run=client -o yaml | kubectl apply -f -
         kubectl apply -f $(System.DefaultWorkingDirectory)/k8s/dev.yaml
-      displayName: Deploy to Dev
+        kubectl apply -f $(System.DefaultWorkingDirectory)/k8s/dev-ingress.yaml
 
-# ---------------- APPROVAL BEFORE PROD ----------------
+# APPROVAL PROD
 - stage: Approval_Prod
   dependsOn: Deploy_Dev
   jobs:
@@ -60,9 +57,9 @@ stages:
     steps:
     - task: ManualValidation@0
       inputs:
-        instructions: "Approve deployment to PROD"
+        instructions: "Check and Approve deployment to PROD env."
 
-# ---------------- PROD DEPLOY ----------------
+# DEPLOY PROD
 - stage: Deploy_Prod
   dependsOn: Approval_Prod
   jobs:
@@ -70,9 +67,8 @@ stages:
     steps:
     - script: |
         az login --identity
-
         az aks get-credentials --name $AKS_NAME --resource-group $RG --overwrite-existing
 
         kubectl create namespace prod --dry-run=client -o yaml | kubectl apply -f -
         kubectl apply -f $(System.DefaultWorkingDirectory)/k8s/prod.yaml
-      displayName: Deploy to Prod
+        kubectl apply -f $(System.DefaultWorkingDirectory)/k8s/prod-ingress.yaml
