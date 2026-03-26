@@ -25,8 +25,20 @@ stages:
         docker push $ACR_NAME.azurecr.io/myapp:latest
       displayName: Build and Push Image
 
-# ---------------- DEV ----------------
+# ---------------- APPROVAL BEFORE DEV ----------------
+- stage: Approval_Dev
+  dependsOn: Build
+  jobs:
+  - job: Wait
+    pool: server
+    steps:
+    - task: ManualValidation@0
+      inputs:
+        instructions: "Approve deployment to DEV environment"
+
+# ---------------- DEV DEPLOY ----------------
 - stage: Deploy_Dev
+  dependsOn: Approval_Dev
   jobs:
   - job: Deploy
     steps:
@@ -39,8 +51,9 @@ stages:
         kubectl apply -f dev-deploy.yaml
       displayName: Deploy to Dev
 
-# ---------------- APPROVAL ----------------
-- stage: Approval
+# ---------------- APPROVAL BEFORE PROD ----------------
+- stage: Approval_Prod
+  dependsOn: Deploy_Dev
   jobs:
   - job: Wait
     pool: server
@@ -49,8 +62,9 @@ stages:
       inputs:
         instructions: "Approve deployment to PROD"
 
-# ---------------- PROD ----------------
+# ---------------- PROD DEPLOY ----------------
 - stage: Deploy_Prod
+  dependsOn: Approval_Prod
   jobs:
   - job: Deploy
     steps:
