@@ -102,30 +102,16 @@
 
         /* Dashboard Flex Layout */
         .dashboard {
-            display: flex; 
-            flex-wrap: wrap; 
-            gap: 20px; 
-            max-width: 1600px; 
-            margin: 0 auto;
-            align-items: flex-start;
+            display: flex; flex-wrap: wrap; gap: 20px; 
+            max-width: 1600px; margin: 0 auto; align-items: flex-start;
         }
 
-        /* Card Setup & Drag Styles */
         .card {
-            background: var(--panel-bg); 
-            border: 1px solid var(--cyan-dim);
-            padding: 20px; 
-            position: relative; 
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-            display: flex; 
-            flex-direction: column; 
-            backdrop-filter: blur(8px);
-            resize: both; 
-            overflow: auto; 
-            min-width: 250px; 
-            min-height: 200px;
-            cursor: grab;
-            transition: opacity 0.2s ease, transform 0.2s ease;
+            background: var(--panel-bg); border: 1px solid var(--cyan-dim);
+            padding: 20px; position: relative; box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            display: flex; flex-direction: column; backdrop-filter: blur(8px);
+            resize: both; overflow: auto; min-width: 250px; min-height: 200px;
+            cursor: grab; transition: opacity 0.2s ease, transform 0.2s ease;
         }
         
         .card:active { cursor: grabbing; }
@@ -152,38 +138,20 @@
         input { background: rgba(0,0,0,0.8); border: 1px solid var(--cyan-dim); color: var(--cyan); padding: 10px; width: 100%; outline: none; transition: 0.3s; }
         input:focus { border-color: var(--cyan); box-shadow: var(--border-glow); }
 
-        /* Calculator */
-        .calc-display {
-            background: rgba(0,0,0,0.8); padding: 15px; text-align: right;
-            font-size: 24px; border: 1px solid var(--cyan-dim);
-            margin-bottom: 15px; min-height: 60px; color: #fff; letter-spacing: 2px;
-        }
+        .calc-display { background: rgba(0,0,0,0.8); padding: 15px; text-align: right; font-size: 24px; border: 1px solid var(--cyan-dim); margin-bottom: 15px; min-height: 60px; color: #fff; letter-spacing: 2px; }
         .calc-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; flex-grow: 1;}
         .calc-grid button { display: flex; align-items: center; justify-content: center; min-height: 40px;}
 
-        /* Queue */
-        .todo-item {
-            display: flex; align-items: center; justify-content: space-between;
-            padding: 10px; border: 1px solid rgba(0,0,0,0); border-bottom: 1px solid var(--cyan-dim); background: rgba(0,0,0,0.4); margin-bottom: 5px; transition: 0.2s;
-        }
+        .todo-item { display: flex; align-items: center; justify-content: space-between; padding: 10px; border: 1px solid rgba(0,0,0,0); border-bottom: 1px solid var(--cyan-dim); background: rgba(0,0,0,0.4); margin-bottom: 5px; transition: 0.2s; }
         .todo-item:hover { border: 1px solid var(--cyan-dim); background: rgba(0, 229, 255, 0.05); }
         .todo-text { cursor: pointer; flex: 1; font-size: 12px; }
         .todo-text.done { color: #555; text-decoration: line-through; }
 
-        .console {
-            height: 160px; background: rgba(0,0,0,0.9); border-top: 1px solid var(--cyan);
-            padding: 15px 30px; font-size: 12px; overflow-y: auto; color: var(--neon-green); flex-shrink: 0;
-        }
+        .console { height: 160px; background: rgba(0,0,0,0.9); border-top: 1px solid var(--cyan); padding: 15px 30px; font-size: 12px; overflow-y: auto; color: var(--neon-green); flex-shrink: 0; }
         .console div { margin-bottom: 5px; font-family: monospace; }
         .log-warn { color: #ffcc00; } .log-err { color: var(--neon-red); } .log-sys { color: var(--cyan); }
 
-        /* Self-Destruct Overlay */
-        .destruct-overlay {
-            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            background: rgba(5, 0, 0, 0.95); z-index: 9999;
-            display: none; flex-direction: column; justify-content: center; align-items: center;
-            color: var(--neon-red); text-shadow: 0 0 20px var(--neon-red);
-        }
+        .destruct-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(5, 0, 0, 0.95); z-index: 9999; display: none; flex-direction: column; justify-content: center; align-items: center; color: var(--neon-red); text-shadow: 0 0 20px var(--neon-red); }
         .warning-text { font-size: 4rem; letter-spacing: 5px; animation: flash 1s infinite; text-align: center; }
         .countdown { font-size: 15rem; margin-top: 20px; font-weight: bold; }
         @keyframes flash { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
@@ -301,327 +269,97 @@
     Chart.defaults.font.family = "'Share Tech Mono', monospace";
 
     /* =========================================
-       1. STOPWATCH LOGIC
+       1. STOPWATCH & DESTRUCT LOGIC
        ========================================= */
-    let swStartTime = 0;
-    let swElapsedTime = 0;
-    let swInterval;
+    let swStartTime = 0; let swElapsedTime = 0; let swInterval;
     const swDisplay = document.getElementById('stopwatchDisplay');
+    function updateStopwatch() { const time = Date.now() - swStartTime + swElapsedTime; let h = Math.floor(time / 3600000).toString().padStart(2, '0'); let m = Math.floor((time % 3600000) / 60000).toString().padStart(2, '0'); let s = Math.floor((time % 60000) / 1000).toString().padStart(2, '0'); let ms = (time % 1000).toString().padStart(3, '0'); swDisplay.innerText = `${h}:${m}:${s}.${ms}`; }
+    function startStopwatch() { if (!swInterval) { swStartTime = Date.now(); swInterval = setInterval(updateStopwatch, 10); log("Stopwatch initialized.", "sys"); } }
+    function pauseStopwatch() { if (swInterval) { swElapsedTime += Date.now() - swStartTime; clearInterval(swInterval); swInterval = null; log("Stopwatch paused.", "sys"); } }
+    function resetStopwatch() { clearInterval(swInterval); swInterval = null; swElapsedTime = 0; swDisplay.innerText = "00:00:00.000"; log("Stopwatch reset.", "sys"); }
 
-    function updateStopwatch() {
-        const time = Date.now() - swStartTime + swElapsedTime;
-        
-        let h = Math.floor(time / 3600000);
-        let m = Math.floor((time % 3600000) / 60000);
-        let s = Math.floor((time % 60000) / 1000);
-        let ms = time % 1000;
-
-        h = h.toString().padStart(2, '0');
-        m = m.toString().padStart(2, '0');
-        s = s.toString().padStart(2, '0');
-        ms = ms.toString().padStart(3, '0');
-
-        swDisplay.innerText = `${h}:${m}:${s}.${ms}`;
-    }
-
-    function startStopwatch() {
-        if (!swInterval) {
-            swStartTime = Date.now();
-            swInterval = setInterval(updateStopwatch, 10); // Update every 10ms for smooth ms tracking
-            log("Stopwatch initialized and started.", "sys");
-        }
-    }
-
-    function pauseStopwatch() {
-        if (swInterval) {
-            swElapsedTime += Date.now() - swStartTime;
-            clearInterval(swInterval);
-            swInterval = null;
-            log("Stopwatch paused.", "sys");
-        }
-    }
-
-    function resetStopwatch() {
-        clearInterval(swInterval);
-        swInterval = null;
-        swElapsedTime = 0;
-        swDisplay.innerText = "00:00:00.000";
-        log("Stopwatch parameters reset.", "sys");
-    }
-    /* =========================================
-       2. DESTRUCT PROTOCOL
-       ========================================= */
     let destructInterval;
-    function initiateDestruct() {
-        const overlay = document.getElementById('destructOverlay');
-        const cdText = document.getElementById('countdownText');
-        const titleText = document.getElementById('destructTitle');
-        
-        overlay.style.display = 'flex';
-        let count = 10;
-        cdText.innerText = count;
-        
-        logError("CRITICAL: SELF-DESTRUCT SEQUENCE INITIATED.");
-        
-        destructInterval = setInterval(() => {
-            count--;
-            if (count > 0) {
-                cdText.innerText = count;
-                logError(`Detonation in ${count}...`);
-            } else {
-                clearInterval(destructInterval);
-                cdText.innerText = "OFFLINE";
-                titleText.innerText = "SYSTEM PURGED";
-                titleText.style.animation = "none";
-                logError("SYSTEM OFFLINE. CONNECTION TERMINATED.");
-            }
-        }, 1000);
-    }
+    function initiateDestruct() { const overlay = document.getElementById('destructOverlay'); const cdText = document.getElementById('countdownText'); const titleText = document.getElementById('destructTitle'); overlay.style.display = 'flex'; let count = 10; cdText.innerText = count; logError("CRITICAL: SELF-DESTRUCT SEQUENCE INITIATED."); destructInterval = setInterval(() => { count--; if (count > 0) { cdText.innerText = count; logError(`Detonation in ${count}...`); } else { clearInterval(destructInterval); cdText.innerText = "OFFLINE"; titleText.innerText = "SYSTEM PURGED"; titleText.style.animation = "none"; logError("SYSTEM OFFLINE. CONNECTION TERMINATED."); } }, 1000); }
 
     /* =========================================
-       3. CALCULATOR & DATABASE QUEUE LOGIC
+       2. CALCULATOR & DATABASE QUEUE LOGIC
        ========================================= */
-    let exp = '';
-    const calcDisp = document.getElementById('calcDisplay');
+    let exp = ''; const calcDisp = document.getElementById('calcDisplay');
     function p(x) { exp += x; calcDisp.innerText = exp; }
     function clr() { exp = ''; calcDisp.innerText = '0'; }
-    function calc() {
-        try { exp = eval(exp) + ''; calcDisp.innerText = exp; log("Co-processor cycle complete.", "sys"); } 
-        catch { exp = ''; calcDisp.innerText = 'ERR'; logError("Co-processor syntax fault."); }
-    }
+    function calc() { try { exp = eval(exp) + ''; calcDisp.innerText = exp; log("Co-processor cycle complete.", "sys"); } catch { exp = ''; calcDisp.innerText = 'ERR'; logError("Co-processor syntax fault."); } }
 
     async function renderTasks() {
-        try {
-            const response = await fetch('/todos');
-            const tasks = await response.json();
-            const list = document.getElementById('todoList');
-            list.innerHTML = '';
-            
-            tasks.forEach(t => {
-                const d = document.createElement('div');
-                d.className = 'todo-item';
-                d.innerHTML = `
-                    <span class="todo-text ${t.done ? 'done' : ''}" onclick="toggleDone(${t.id})">
-                        > ${t.text}
-                    </span>
-                    <button onclick="deleteTask(${t.id})" class="danger" style="padding: 2px 8px;">DEL</button>
-                `;
-                list.appendChild(d);
-            });
-        } catch (err) {
-            logError("Failed to sync with central database.");
-        }
+        try { const response = await fetch('/todos'); const tasks = await response.json(); const list = document.getElementById('todoList'); list.innerHTML = ''; tasks.forEach(t => { const d = document.createElement('div'); d.className = 'todo-item'; d.innerHTML = `<span class="todo-text ${t.done ? 'done' : ''}" onclick="toggleDone(${t.id})">> ${t.text}</span><button onclick="deleteTask(${t.id})" class="danger" style="padding: 2px 8px;">DEL</button>`; list.appendChild(d); }); } catch (err) { logError("Failed to sync with central database."); }
     }
-
-    async function addTodo() {
-        const input = document.getElementById('todoInput');
-        const text = input.value.trim();
-        if (!text) return;
-
-        try {
-            const response = await fetch('/add', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ text: text })
-            });
-            if (response.ok) {
-                input.value = '';
-                log(`Task added to database.`, 'sys');
-                renderTasks();
-            }
-        } catch (err) {
-            logError("Write-access denied: Database unreachable.");
-        }
-    }
-
-    async function toggleDone(id) {
-        try {
-            await fetch(`/toggle/${id}`, { method: 'POST' });
-            renderTasks();
-        } catch (err) {
-            logError("Task update failed.");
-        }
-    }
-
-    async function deleteTask(id) {
-        try {
-            await fetch(`/delete/${id}`, { method: 'DELETE' });
-            log(`Task deleted.`, 'warn');
-            renderTasks();
-        } catch (err) {
-            logError("Delete command failed.");
-        }
-    }
-
-    async function clearCompletedTasks() {
-        try {
-            await fetch('/clear_completed', { method: 'DELETE' });
-            log(`Completed tasks purged from database.`, 'sys');
-            renderTasks();
-        } catch (err) {
-            logError("Batch delete failed.");
-        }
-    }
-
-    // Initial Database Sync on load
+    async function addTodo() { const input = document.getElementById('todoInput'); const text = input.value.trim(); if (!text) return; try { const response = await fetch('/add', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text: text }) }); if (response.ok) { input.value = ''; log(`Task added.`, 'sys'); renderTasks(); } } catch (err) { logError("Database unreachable."); } }
+    async function toggleDone(id) { try { await fetch(`/toggle/${id}`, { method: 'POST' }); renderTasks(); } catch (err) { logError("Task update failed."); } }
+    async function deleteTask(id) { try { await fetch(`/delete/${id}`, { method: 'DELETE' }); log(`Task deleted.`, 'warn'); renderTasks(); } catch (err) { logError("Delete failed."); } }
+    async function clearCompletedTasks() { try { await fetch('/clear_completed', { method: 'DELETE' }); log(`Completed tasks purged.`, 'sys'); renderTasks(); } catch (err) { logError("Batch delete failed."); } }
     renderTasks();
 
     /* =========================================
-       4. WIDGET RESIZE & DRAG-AND-DROP SYSTEM
+       3. WIDGET RESIZE & DRAG-AND-DROP
        ========================================= */
-    const dashboard = document.getElementById('mainDashboard');
-    const cards = document.querySelectorAll('.card');
-    const defaultOrder = ['widget-traffic', 'widget-calc', 'widget-hw', 'widget-threat', 'widget-queue'];
-    
-    // Load Size & Order
-    const savedSizes = JSON.parse(localStorage.getItem('nexus_widget_sizes')) || {};
-    const savedOrder = JSON.parse(localStorage.getItem('nexus_widget_order'));
-    
-    if (savedOrder) {
-        savedOrder.forEach(id => {
-            const el = document.getElementById(id);
-            if (el) dashboard.appendChild(el);
-        });
-    }
+    const dashboard = document.getElementById('mainDashboard'); const cards = document.querySelectorAll('.card'); const defaultOrder = ['widget-traffic', 'widget-calc', 'widget-hw', 'widget-threat', 'widget-queue'];
+    const savedSizes = JSON.parse(localStorage.getItem('nexus_widget_sizes')) || {}; const savedOrder = JSON.parse(localStorage.getItem('nexus_widget_order'));
+    if (savedOrder) { savedOrder.forEach(id => { const el = document.getElementById(id); if (el) dashboard.appendChild(el); }); }
+    cards.forEach(card => { if (card.id && savedSizes[card.id]) { card.style.width = savedSizes[card.id].width; card.style.height = savedSizes[card.id].height; card.style.flexGrow = '0'; } card.addEventListener('dragstart', () => card.classList.add('dragging')); card.addEventListener('dragend', () => { card.classList.remove('dragging'); const currentOrder = [...dashboard.querySelectorAll('.card')].map(c => c.id); localStorage.setItem('nexus_widget_order', JSON.stringify(currentOrder)); log("Layout saved.", "sys"); }); });
+    dashboard.addEventListener('dragover', e => { e.preventDefault(); const afterElement = getDragAfterElement(dashboard, e.clientX, e.clientY); const draggable = document.querySelector('.dragging'); if (afterElement == null) { dashboard.appendChild(draggable); } else { dashboard.insertBefore(draggable, afterElement); } });
+    function getDragAfterElement(container, x, y) { const draggableElements = [...container.querySelectorAll('.card:not(.dragging)')]; return draggableElements.reduce((closest, child) => { const box = child.getBoundingClientRect(); const boxCenterX = box.left + box.width / 2; const boxCenterY = box.top + box.height / 2; const distance = Math.hypot(x - boxCenterX, y - boxCenterY); if (distance < closest.distance) { return { distance: distance, element: child }; } else { return closest; } }, { distance: Number.POSITIVE_INFINITY }).element; }
+    let isBooting = true; let resizeTimeout; const sizeObserver = new ResizeObserver(entries => { clearTimeout(resizeTimeout); resizeTimeout = setTimeout(() => { let sizes = JSON.parse(localStorage.getItem('nexus_widget_sizes')) || {}; let layoutChanged = false; entries.forEach(entry => { const card = entry.target; if (card.id && card.style.width) { card.style.flexGrow = '0'; if (!sizes[card.id] || sizes[card.id].width !== card.style.width || sizes[card.id].height !== card.style.height) { sizes[card.id] = { width: card.style.width, height: card.style.height }; layoutChanged = true; } } }); if (layoutChanged) { localStorage.setItem('nexus_widget_sizes', JSON.stringify(sizes)); if (!isBooting) log("Dimensions saved.", "sys"); } }, 500); });
+    cards.forEach(card => sizeObserver.observe(card)); setTimeout(() => { isBooting = false; }, 1000);
+    function resetLayout() { localStorage.removeItem('nexus_widget_sizes'); localStorage.removeItem('nexus_widget_order'); defaultOrder.forEach(id => { const el = document.getElementById(id); if (el) { el.style.width = ''; el.style.height = ''; el.style.flexGrow = ''; dashboard.appendChild(el); } }); log("Dashboard reset.", "sys"); }
 
-    cards.forEach(card => {
-        // Apply saved sizes
-        if (card.id && savedSizes[card.id]) {
-            card.style.width = savedSizes[card.id].width;
-            card.style.height = savedSizes[card.id].height;
-            card.style.flexGrow = '0'; 
-        }
-
-        // Drag Events
-        card.addEventListener('dragstart', () => {
-            card.classList.add('dragging');
-        });
-
-        card.addEventListener('dragend', () => {
-            card.classList.remove('dragging');
-            const currentOrder = [...dashboard.querySelectorAll('.card')].map(c => c.id);
-            localStorage.setItem('nexus_widget_order', JSON.stringify(currentOrder));
-            log("Dashboard layout order saved.", "sys");
-        });
-    });
-
-    dashboard.addEventListener('dragover', e => {
-        e.preventDefault();
-        const afterElement = getDragAfterElement(dashboard, e.clientX, e.clientY);
-        const draggable = document.querySelector('.dragging');
-        if (afterElement == null) {
-            dashboard.appendChild(draggable);
-        } else {
-            dashboard.insertBefore(draggable, afterElement);
-        }
-    });
-
-    function getDragAfterElement(container, x, y) {
-        const draggableElements = [...container.querySelectorAll('.card:not(.dragging)')];
-        return draggableElements.reduce((closest, child) => {
-            const box = child.getBoundingClientRect();
-            const boxCenterX = box.left + box.width / 2;
-            const boxCenterY = box.top + box.height / 2;
-            const distance = Math.hypot(x - boxCenterX, y - boxCenterY);
-            
-            if (distance < closest.distance) {
-                return { distance: distance, element: child };
-            } else {
-                return closest;
-            }
-        }, { distance: Number.POSITIVE_INFINITY }).element;
-    }
-
-    // Size Observer
-    let isBooting = true; 
-    let resizeTimeout;
-    const sizeObserver = new ResizeObserver(entries => {
-        clearTimeout(resizeTimeout);
-        resizeTimeout = setTimeout(() => {
-            let sizes = JSON.parse(localStorage.getItem('nexus_widget_sizes')) || {};
-            let layoutChanged = false;
-            entries.forEach(entry => {
-                const card = entry.target;
-                if (card.id && card.style.width) {
-                    card.style.flexGrow = '0'; 
-                    if (!sizes[card.id] || sizes[card.id].width !== card.style.width || sizes[card.id].height !== card.style.height) {
-                        sizes[card.id] = { width: card.style.width, height: card.style.height };
-                        layoutChanged = true;
-                    }
-                }
-            });
-            if (layoutChanged) {
-                localStorage.setItem('nexus_widget_sizes', JSON.stringify(sizes));
-                if (!isBooting) log("Widget dimensions saved locally.", "sys");
-            }
-        }, 500); 
-    });
-    cards.forEach(card => sizeObserver.observe(card));
-    setTimeout(() => { isBooting = false; }, 1000); 
-
-    function resetLayout() {
-        localStorage.removeItem('nexus_widget_sizes');
-        localStorage.removeItem('nexus_widget_order');
-        
-        defaultOrder.forEach(id => {
-            const el = document.getElementById(id);
-            if (el) {
-                el.style.width = '';
-                el.style.height = '';
-                el.style.flexGrow = ''; 
-                dashboard.appendChild(el);
-            }
-        });
-        log("Dashboard parameters reset to default.", "sys");
-    }
     /* =========================================
-       5. SERVER POLLING & CHARTS
+       4. REAL SERVER POLLING & CHARTS
        ========================================= */
     const deployCtx = document.getElementById('deployChart').getContext('2d');
-    const deployChart = new Chart(deployCtx, {
-        type: 'line', data: { labels: ['T-40s', 'T-30s', 'T-20s', 'T-10s', 'NOW'], datasets: [{ label: 'SERVER REQUESTS /s', data: [10, 15, 12, 18, 14], borderColor: '#00e5ff', backgroundColor: 'rgba(0, 229, 255, 0.1)', fill: true, tension: 0.4, borderWidth: 2, pointRadius: 0 }] },
-        options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, max: 200 } }, animation: { duration: 0 } }
-    });
-    const resourceChart = new Chart(document.getElementById('chart2'), { type: 'doughnut', data: { labels: ['CPU', 'RAM', 'DISK'], datasets: [{ data: [10, 20, 30], backgroundColor: ['#00e5ff', '#00ff9f', '#114455'], borderWidth: 0 }] }, options: { responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: { position: 'bottom' } } } });
-    const threatChart = new Chart(document.getElementById('chart3'), { type: 'radar', data: { labels: ['DDoS', 'XSS', 'SQLi', 'Brute'], datasets: [{ label: 'RISK', data: [5, 5, 5, 5], borderColor: '#ff0055', backgroundColor: 'rgba(255,0,85,0.2)', pointBackgroundColor: '#ff0055' }] }, options: { responsive: true, maintainAspectRatio: false, scales: { r: { min: 0, max: 100, ticks: {display: false} } } } });
-    let serverStartTime = Date.now() - (86400 * 1000 * 2);
-    function simulateRealtimeData() {
-        let uptimeSecs = Math.floor((Date.now() - serverStartTime) / 1000);
-        let d = Math.floor(uptimeSecs / 86400), h = Math.floor((uptimeSecs % 86400) / 3600), m = Math.floor((uptimeSecs % 3600) / 60);
-        document.getElementById('uptime').innerText = `${d}d ${h<10?'0'+h:h}:${m<10?'0'+m:m}:${uptimeSecs%60<10?'0'+(uptimeSecs%60):uptimeSecs%60}`;
+    const deployChart = new Chart(deployCtx, { type: 'line', data: { labels: ['T-8s', 'T-6s', 'T-4s', 'T-2s', 'NOW'], datasets: [{ label: 'SERVER REQUESTS /s', data: [0, 0, 0, 0, 0], borderColor: '#00e5ff', backgroundColor: 'rgba(0, 229, 255, 0.1)', fill: true, tension: 0.4, borderWidth: 2, pointRadius: 0 }] }, options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, suggestedMax: 10 } }, animation: { duration: 0 } } });
+    const resourceChart = new Chart(document.getElementById('chart2'), { type: 'doughnut', data: { labels: ['CPU', 'RAM', 'DISK'], datasets: [{ data: [0, 0, 0], backgroundColor: ['#00e5ff', '#00ff9f', '#114455'], borderWidth: 0 }] }, options: { responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: { position: 'bottom' } } } });
+    const threatChart = new Chart(document.getElementById('chart3'), { type: 'radar', data: { labels: ['DDoS', 'XSS', 'SQLi', 'Brute'], datasets: [{ label: 'RISK', data: [0, 0, 0, 0], borderColor: '#ff0055', backgroundColor: 'rgba(255,0,85,0.2)', pointBackgroundColor: '#ff0055' }] }, options: { responsive: true, maintainAspectRatio: false, scales: { r: { min: 0, max: 100, ticks: {display: false} } } } });
 
-        let baseTraffic = Math.floor(Math.random() * 30) + 10;
-        let isHighTraffic = Math.random() > 0.85; 
-        if (isHighTraffic) baseTraffic += 120; 
+    async function fetchServerMetrics() {
+        try {
+            const response = await fetch('/api/metrics');
+            const data = await response.json();
 
-        deployChart.data.datasets[0].data.shift(); deployChart.data.datasets[0].data.push(baseTraffic); deployChart.update();
+            // 1. Uptime
+            let uptimeSecs = Math.floor(data.uptime);
+            let d = Math.floor(uptimeSecs / 86400), h = Math.floor((uptimeSecs % 86400) / 3600), m = Math.floor((uptimeSecs % 3600) / 60);
+            document.getElementById('uptime').innerText = `${d}d ${h<10?'0'+h:h}:${m<10?'0'+m:m}:${uptimeSecs%60<10?'0'+(uptimeSecs%60):uptimeSecs%60}`;
 
-        let cpu = isHighTraffic ? Math.floor(Math.random() * 20) + 75 : Math.floor(Math.random() * 20) + 10;
-        let ram = isHighTraffic ? Math.floor(Math.random() * 20) + 60 : Math.floor(Math.random() * 10) + 40;
-        resourceChart.data.datasets[0].data = [cpu, ram, 35]; resourceChart.update();
+            // 2. Traffic
+            deployChart.data.datasets[0].data.shift(); 
+            deployChart.data.datasets[0].data.push(data.traffic); 
+            deployChart.update();
 
-        let ddosThreat = isHighTraffic ? 95 : Math.floor(Math.random() * 15);
-        let bruteThreat = Math.floor(Math.random() * 20);
-        threatChart.data.datasets[0].data = [ddosThreat, 10, 5, bruteThreat]; threatChart.update();
+            // 3. Hardware
+            resourceChart.data.datasets[0].data = data.hardware; 
+            resourceChart.update();
 
-        if (isHighTraffic) {
-            document.getElementById('deployStatusBanner').innerText = "STATUS: LOAD BALANCING...";
-            document.getElementById('deployStatusBanner').style.color = "#ffcc00";
-        } else {
-            document.getElementById('deployStatusBanner').innerText = "STATUS: MONITORING LIVE TRAFFIC";
-            document.getElementById('deployStatusBanner').style.color = "var(--neon-green)";
+            // 4. Threats
+            threatChart.data.datasets[0].data = data.threats; 
+            threatChart.update();
+
+            // 5. Status Banner
+            if (data.hardware[0] > 80 || data.traffic > 50) {
+                document.getElementById('deployStatusBanner').innerText = "STATUS: LOAD BALANCING (HIGH STRESS)";
+                document.getElementById('deployStatusBanner').style.color = "#ffcc00";
+            } else {
+                document.getElementById('deployStatusBanner').innerText = "STATUS: MONITORING LIVE TRAFFIC";
+                document.getElementById('deployStatusBanner').style.color = "var(--neon-green)";
+            }
+        } catch(e) {
+            logError("Failed to fetch real-time telemetry from server.");
         }
     }
-    function log(msg, type="info") {
-        const con = document.getElementById('consoleLog');
-        const div = document.createElement('div');
-        div.innerText = `[${new Date().toLocaleTimeString('en-GB')}] ${msg}`;
-        if (type === "warn") div.className = "log-warn"; if (type === "err") div.className = "log-err"; if (type === "sys") div.className = "log-sys";
-        con.appendChild(div); con.scrollTop = con.scrollHeight;
-    }
-    function logWarn(msg) { log(msg, "warn"); }
-    function logError(msg) { log(msg, "err"); }
-    setInterval(simulateRealtimeData, 2000);
+
+    function log(msg, type="info") { const con = document.getElementById('consoleLog'); const div = document.createElement('div'); div.innerText = `[${new Date().toLocaleTimeString('en-GB')}] ${msg}`; if (type === "warn") div.className = "log-warn"; if (type === "err") div.className = "log-err"; if (type === "sys") div.className = "log-sys"; con.appendChild(div); con.scrollTop = con.scrollHeight; }
+    function logWarn(msg) { log(msg, "warn"); } function logError(msg) { log(msg, "err"); }
+
+    // Fetch real metrics every 2 seconds
+    setInterval(fetchServerMetrics, 2000);
 </script>
 </body>
 </html>
