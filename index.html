@@ -48,8 +48,6 @@
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: #000; }
         ::-webkit-scrollbar-thumb { background: var(--cyan); }
-        
-        /* Style for the resize handle corner */
         ::-webkit-resizer { background: var(--cyan); outline: 1px solid var(--dark-bg); }
 
         /* Sidebar */
@@ -112,6 +110,7 @@
             align-items: flex-start;
         }
 
+        /* Card Setup & Drag Styles */
         .card {
             background: var(--panel-bg); 
             border: 1px solid var(--cyan-dim);
@@ -121,20 +120,22 @@
             display: flex; 
             flex-direction: column; 
             backdrop-filter: blur(8px);
-            
-            /* RESIZE PROPERTIES */
             resize: both; 
             overflow: auto; 
             min-width: 250px; 
             min-height: 200px;
+            cursor: grab;
+            transition: opacity 0.2s ease, transform 0.2s ease;
         }
+        
+        .card:active { cursor: grabbing; }
+        .card.dragging { opacity: 0.4; transform: scale(0.98); border: 2px dashed var(--neon-green); z-index: 50; }
 
         .card::before { content: ""; position: absolute; top: 0px; left: 0px; width: 15px; height: 15px; border-top: 2px solid var(--cyan); border-left: 2px solid var(--cyan); pointer-events: none;}
         .card::after { content: ""; position: absolute; bottom: 0px; right: 0px; width: 15px; height: 15px; border-bottom: 2px solid var(--cyan); border-right: 2px solid var(--cyan); pointer-events: none; }
 
-        .title { font-size: 12px; letter-spacing: 2px; margin-bottom: 20px; color: #fff; border-left: 3px solid var(--cyan); padding-left: 10px; flex-shrink: 0;}
+        .title { font-size: 12px; letter-spacing: 2px; margin-bottom: 20px; color: #fff; border-left: 3px solid var(--cyan); padding-left: 10px; flex-shrink: 0; pointer-events: none;}
 
-        /* Base Flex Widths */
         .col-8 { width: calc(66.666% - 14px); flex-grow: 1; } 
         .col-4 { width: calc(33.333% - 14px); flex-grow: 1; }
 
@@ -151,17 +152,16 @@
         input { background: rgba(0,0,0,0.8); border: 1px solid var(--cyan-dim); color: var(--cyan); padding: 10px; width: 100%; outline: none; transition: 0.3s; }
         input:focus { border-color: var(--cyan); box-shadow: var(--border-glow); }
 
-        /* Calculator Specifics */
+        /* Calculator */
         .calc-display {
             background: rgba(0,0,0,0.8); padding: 15px; text-align: right;
             font-size: 24px; border: 1px solid var(--cyan-dim);
-            margin-bottom: 15px; min-height: 60px; color: #fff;
-            letter-spacing: 2px;
+            margin-bottom: 15px; min-height: 60px; color: #fff; letter-spacing: 2px;
         }
         .calc-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; flex-grow: 1;}
         .calc-grid button { display: flex; align-items: center; justify-content: center; min-height: 40px;}
 
-        /* Queue Specifics */
+        /* Queue */
         .todo-item {
             display: flex; align-items: center; justify-content: space-between;
             padding: 10px; border: 1px solid rgba(0,0,0,0); border-bottom: 1px solid var(--cyan-dim); background: rgba(0,0,0,0.4); margin-bottom: 5px; transition: 0.2s;
@@ -176,6 +176,17 @@
         }
         .console div { margin-bottom: 5px; font-family: monospace; }
         .log-warn { color: #ffcc00; } .log-err { color: var(--neon-red); } .log-sys { color: var(--cyan); }
+
+        /* Self-Destruct Overlay */
+        .destruct-overlay {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(5, 0, 0, 0.95); z-index: 9999;
+            display: none; flex-direction: column; justify-content: center; align-items: center;
+            color: var(--neon-red); text-shadow: 0 0 20px var(--neon-red);
+        }
+        .warning-text { font-size: 4rem; letter-spacing: 5px; animation: flash 1s infinite; text-align: center; }
+        .countdown { font-size: 15rem; margin-top: 20px; font-weight: bold; }
+        @keyframes flash { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
 
         @media (max-width: 1200px) { .col-8, .col-4 { width: 100%; } }
         @media (max-width: 800px) { .sidebar { display: none; } }
@@ -208,9 +219,9 @@
         <button onclick="resetLayout()" style="width: 100%; margin-top: 10px;">RESET DASHBOARD</button>
     </div>
 
-    <div class="widget">
-        <div class="widget-title">EMERGENCY PROTOCOL</div>
-        <button onclick="logError('MANUAL OVERRIDE TRIGGERED');" class="danger" style="width: 100%; margin-top: 10px;">PURGE CACHE</button>
+    <div class="widget" style="border-color: var(--neon-red); box-shadow: 0 0 10px rgba(255,0,85,0.2);">
+        <div class="widget-title" style="color: var(--neon-red);">EMERGENCY PROTOCOL</div>
+        <button onclick="initiateDestruct();" class="danger" style="width: 100%; margin-top: 10px;">PURGE SYSTEM</button>
     </div>
 </div>
 
@@ -222,15 +233,15 @@
     </div>
 
     <div class="content">
-        <div class="dashboard">
-            <div class="card col-8" id="widget-traffic">
+        <div class="dashboard" id="mainDashboard">
+            <div class="card col-8" id="widget-traffic" draggable="true">
                 <div class="title">LIVE SERVER METRICS (TRAFFIC)</div>
                 <div style="flex-grow: 1; min-height: 200px; position: relative; width: 100%; height: 100%;">
                     <canvas id="deployChart"></canvas>
                 </div>
             </div>
 
-            <div class="card col-4" id="widget-calc">
+            <div class="card col-4" id="widget-calc" draggable="true">
                 <div class="title">CO-PROCESSOR</div>
                 <div id="calcDisplay" class="calc-display">0</div>
                 <div class="calc-grid">
@@ -241,21 +252,21 @@
                 </div>
             </div>
 
-            <div class="card col-4" id="widget-hw">
+            <div class="card col-4" id="widget-hw" draggable="true">
                 <div class="title">HARDWARE RESOURCES</div>
                 <div style="flex-grow: 1; min-height: 200px; position: relative; width: 100%; height: 100%;">
                     <canvas id="chart2"></canvas>
                 </div>
             </div>
 
-            <div class="card col-4" id="widget-threat">
+            <div class="card col-4" id="widget-threat" draggable="true">
                 <div class="title">THREAT ANALYSIS</div>
                 <div style="flex-grow: 1; min-height: 200px; position: relative; width: 100%; height: 100%;">
                     <canvas id="chart3"></canvas>
                 </div>
             </div>
 
-            <div class="card col-4" id="widget-queue">
+            <div class="card col-4" id="widget-queue" draggable="true">
                 <div class="title">PROCESS QUEUE</div>
                 <div style="display:flex; gap: 10px; margin-bottom: 15px; flex-shrink: 0;">
                     <input id="todoInput" placeholder="Enter process command..." onkeypress="if(event.key === 'Enter') addTodo()">
@@ -274,112 +285,157 @@
     </div>
 </div>
 
+<div id="destructOverlay" class="destruct-overlay">
+    <h1 class="warning-text" id="destructTitle">EMERGENCY OVERRIDE INITIATED</h1>
+    <h2 id="countdownText" class="countdown">10</h2>
+</div>
+
 <script>
     Chart.defaults.color = '#00e5ff';
     Chart.defaults.borderColor = 'rgba(0, 229, 255, 0.1)';
     Chart.defaults.font.family = "'Share Tech Mono', monospace";
 
     /* =========================================
-       1. CALCULATOR LOGIC
+       1. DESTRUCT PROTOCOL
+       ========================================= */
+    let destructInterval;
+    function initiateDestruct() {
+        const overlay = document.getElementById('destructOverlay');
+        const cdText = document.getElementById('countdownText');
+        const titleText = document.getElementById('destructTitle');
+        
+        overlay.style.display = 'flex';
+        let count = 10;
+        cdText.innerText = count;
+        
+        logError("CRITICAL: SELF-DESTRUCT SEQUENCE INITIATED.");
+        
+        destructInterval = setInterval(() => {
+            count--;
+            if (count > 0) {
+                cdText.innerText = count;
+                logError(`Detonation in ${count}...`);
+            } else {
+                clearInterval(destructInterval);
+                cdText.innerText = "OFFLINE";
+                titleText.innerText = "SYSTEM PURGED";
+                titleText.style.animation = "none";
+                logError("SYSTEM OFFLINE. CONNECTION TERMINATED.");
+            }
+        }, 1000);
+    }
+
+    /* =========================================
+       2. CALCULATOR & QUEUE LOGIC
        ========================================= */
     let exp = '';
     const calcDisp = document.getElementById('calcDisplay');
     function p(x) { exp += x; calcDisp.innerText = exp; }
     function clr() { exp = ''; calcDisp.innerText = '0'; }
     function calc() {
-        try { 
-            exp = eval(exp) + ''; 
-            calcDisp.innerText = exp; 
-            log("Co-processor cycle complete.", "sys"); 
-        } 
+        try { exp = eval(exp) + ''; calcDisp.innerText = exp; log("Co-processor cycle complete.", "sys"); } 
         catch { exp = ''; calcDisp.innerText = 'ERR'; logError("Co-processor syntax fault."); }
     }
 
-    /* =========================================
-       2. PERSISTENT PROCESS QUEUE
-       ========================================= */
-    let tasks = JSON.parse(localStorage.getItem('nexus_tasks')) || [
-        { id: 1, text: "Initialize database indexing", done: false }
-    ];
-
+    let tasks = JSON.parse(localStorage.getItem('nexus_tasks')) || [{ id: 1, text: "Initialize database indexing", done: false }];
     function renderTasks() {
         const list = document.getElementById('todoList');
         list.innerHTML = '';
         tasks.forEach(t => {
             const d = document.createElement('div');
             d.className = 'todo-item';
-            d.innerHTML = `
-                <span class="todo-text ${t.done ? 'done' : ''}" onclick="toggleDone(${t.id})">> ${t.text}</span>
-                <button onclick="deleteTask(${t.id})" class="danger" style="padding: 2px 8px;">DEL</button>
-            `;
+            d.innerHTML = `<span class="todo-text ${t.done ? 'done' : ''}" onclick="toggleDone(${t.id})">> ${t.text}</span><button onclick="deleteTask(${t.id})" class="danger" style="padding: 2px 8px;">DEL</button>`;
             list.appendChild(d);
         });
         localStorage.setItem('nexus_tasks', JSON.stringify(tasks));
     }
-
     function addTodo() {
         const input = document.getElementById('todoInput');
         if (!input.value.trim()) return;
         tasks.unshift({ id: Date.now(), text: input.value, done: false });
-        input.value = '';
-        log(`Task added to local state.`, 'sys');
-        renderTasks();
+        input.value = ''; log(`Task added.`, 'sys'); renderTasks();
     }
-
-    function toggleDone(id) {
-        const task = tasks.find(t => t.id === id);
-        if (task) { task.done = !task.done; renderTasks(); }
-    }
-
-    function deleteTask(id) {
-        tasks = tasks.filter(t => t.id !== id);
-        log(`Task deleted from local state.`, 'warn');
-        renderTasks();
-    }
-
-    function clearCompletedTasks() {
-        tasks = tasks.filter(t => !t.done);
-        log(`Completed tasks purged.`, 'sys');
-        renderTasks();
-    }
-    
+    function toggleDone(id) { const task = tasks.find(t => t.id === id); if (task) { task.done = !task.done; renderTasks(); } }
+    function deleteTask(id) { tasks = tasks.filter(t => t.id !== id); log(`Task deleted.`, 'warn'); renderTasks(); }
+    function clearCompletedTasks() { tasks = tasks.filter(t => !t.done); log(`Completed tasks purged.`, 'sys'); renderTasks(); }
     renderTasks();
 
     /* =========================================
-       3. WIDGET RESIZE SAVE & RESET STATE
+       3. WIDGET RESIZE & DRAG-AND-DROP SYSTEM
        ========================================= */
-    const savedSizes = JSON.parse(localStorage.getItem('nexus_widget_sizes')) || {};
+    const dashboard = document.getElementById('mainDashboard');
     const cards = document.querySelectorAll('.card');
-    let isBooting = true; 
+    const defaultOrder = ['widget-traffic', 'widget-calc', 'widget-hw', 'widget-threat', 'widget-queue'];
+    
+    // Load Size & Order
+    const savedSizes = JSON.parse(localStorage.getItem('nexus_widget_sizes')) || {};
+    const savedOrder = JSON.parse(localStorage.getItem('nexus_widget_order'));
+    
+    if (savedOrder) {
+        savedOrder.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) dashboard.appendChild(el);
+        });
+    }
 
-    // Load saved sizes
     cards.forEach(card => {
+        // Apply saved sizes
         if (card.id && savedSizes[card.id]) {
             card.style.width = savedSizes[card.id].width;
             card.style.height = savedSizes[card.id].height;
             card.style.flexGrow = '0'; 
         }
+
+        // Drag Events
+        card.addEventListener('dragstart', () => {
+            card.classList.add('dragging');
+        });
+
+        card.addEventListener('dragend', () => {
+            card.classList.remove('dragging');
+            const currentOrder = [...dashboard.querySelectorAll('.card')].map(c => c.id);
+            localStorage.setItem('nexus_widget_order', JSON.stringify(currentOrder));
+            log("Dashboard layout order saved.", "sys");
+        });
     });
 
-    // Reset Layout Function
-    function resetLayout() {
-        localStorage.removeItem('nexus_widget_sizes');
-        cards.forEach(card => {
-            card.style.width = '';
-            card.style.height = '';
-            card.style.flexGrow = ''; // Let CSS take back control
-        });
-        log("Dashboard layout parameters reset to default.", "sys");
+    dashboard.addEventListener('dragover', e => {
+        e.preventDefault();
+        const afterElement = getDragAfterElement(dashboard, e.clientX, e.clientY);
+        const draggable = document.querySelector('.dragging');
+        if (afterElement == null) {
+            dashboard.appendChild(draggable);
+        } else {
+            dashboard.insertBefore(draggable, afterElement);
+        }
+    });
+
+    // Determines where to drop the dragged element based on cursor position
+    function getDragAfterElement(container, x, y) {
+        const draggableElements = [...container.querySelectorAll('.card:not(.dragging)')];
+        return draggableElements.reduce((closest, child) => {
+            const box = child.getBoundingClientRect();
+            // Checking horizontal & vertical centers to handle wrapping flex items
+            const boxCenterX = box.left + box.width / 2;
+            const boxCenterY = box.top + box.height / 2;
+            const distance = Math.hypot(x - boxCenterX, y - boxCenterY);
+            
+            if (distance < closest.distance) {
+                return { distance: distance, element: child };
+            } else {
+                return closest;
+            }
+        }, { distance: Number.POSITIVE_INFINITY }).element;
     }
 
-    // Observer to save sizes
+    // Size Observer
+    let isBooting = true; 
     let resizeTimeout;
     const sizeObserver = new ResizeObserver(entries => {
         clearTimeout(resizeTimeout);
         resizeTimeout = setTimeout(() => {
             let sizes = JSON.parse(localStorage.getItem('nexus_widget_sizes')) || {};
             let layoutChanged = false;
-
             entries.forEach(entry => {
                 const card = entry.target;
                 if (card.id && card.style.width) {
@@ -390,54 +446,44 @@
                     }
                 }
             });
-
             if (layoutChanged) {
                 localStorage.setItem('nexus_widget_sizes', JSON.stringify(sizes));
-                if (!isBooting) log("Dashboard layout state saved locally.", "sys");
+                if (!isBooting) log("Widget dimensions saved locally.", "sys");
             }
         }, 500); 
     });
-
     cards.forEach(card => sizeObserver.observe(card));
     setTimeout(() => { isBooting = false; }, 1000); 
 
+    // Reset All Layout Options
+    function resetLayout() {
+        localStorage.removeItem('nexus_widget_sizes');
+        localStorage.removeItem('nexus_widget_order');
+        
+        defaultOrder.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) {
+                el.style.width = '';
+                el.style.height = '';
+                el.style.flexGrow = ''; 
+                dashboard.appendChild(el);
+            }
+        });
+        log("Dashboard parameters reset to default.", "sys");
+    }
 
     /* =========================================
-       4. SERVER DATA POLLING & LOGIC
+       4. SERVER POLLING & CHARTS
        ========================================= */
-    let serverStartTime = Date.now() - (86400 * 1000 * 2);
-
     const deployCtx = document.getElementById('deployChart').getContext('2d');
     const deployChart = new Chart(deployCtx, {
-        type: 'line',
-        data: {
-            labels: ['T-40s', 'T-30s', 'T-20s', 'T-10s', 'NOW'],
-            datasets: [{ 
-                label: 'SERVER REQUESTS /s', 
-                data: [10, 15, 12, 18, 14], 
-                borderColor: '#00e5ff', 
-                backgroundColor: 'rgba(0, 229, 255, 0.1)', 
-                fill: true, tension: 0.4, borderWidth: 2, pointRadius: 0
-            }]
-        },
+        type: 'line', data: { labels: ['T-40s', 'T-30s', 'T-20s', 'T-10s', 'NOW'], datasets: [{ label: 'SERVER REQUESTS /s', data: [10, 15, 12, 18, 14], borderColor: '#00e5ff', backgroundColor: 'rgba(0, 229, 255, 0.1)', fill: true, tension: 0.4, borderWidth: 2, pointRadius: 0 }] },
         options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, max: 200 } }, animation: { duration: 0 } }
     });
+    const resourceChart = new Chart(document.getElementById('chart2'), { type: 'doughnut', data: { labels: ['CPU', 'RAM', 'DISK'], datasets: [{ data: [10, 20, 30], backgroundColor: ['#00e5ff', '#00ff9f', '#114455'], borderWidth: 0 }] }, options: { responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: { position: 'bottom' } } } });
+    const threatChart = new Chart(document.getElementById('chart3'), { type: 'radar', data: { labels: ['DDoS', 'XSS', 'SQLi', 'Brute'], datasets: [{ label: 'RISK', data: [5, 5, 5, 5], borderColor: '#ff0055', backgroundColor: 'rgba(255,0,85,0.2)', pointBackgroundColor: '#ff0055' }] }, options: { responsive: true, maintainAspectRatio: false, scales: { r: { min: 0, max: 100, ticks: {display: false} } } } });
 
-    const resourceChart = new Chart(document.getElementById('chart2'), {
-        type: 'doughnut',
-        data: { labels: ['CPU', 'RAM', 'DISK'], datasets: [{ data: [10, 20, 30], backgroundColor: ['#00e5ff', '#00ff9f', '#114455'], borderWidth: 0 }] },
-        options: { responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: { position: 'bottom' } } }
-    });
-
-    const threatChart = new Chart(document.getElementById('chart3'), {
-        type: 'radar',
-        data: {
-            labels: ['DDoS', 'XSS', 'SQLi', 'Brute'],
-            datasets: [{ label: 'RISK', data: [5, 5, 5, 5], borderColor: '#ff0055', backgroundColor: 'rgba(255,0,85,0.2)', pointBackgroundColor: '#ff0055' }]
-        },
-        options: { responsive: true, maintainAspectRatio: false, scales: { r: { min: 0, max: 100, ticks: {display: false} } } }
-    });
-
+    let serverStartTime = Date.now() - (86400 * 1000 * 2);
     function simulateRealtimeData() {
         let uptimeSecs = Math.floor((Date.now() - serverStartTime) / 1000);
         let d = Math.floor(uptimeSecs / 86400), h = Math.floor((uptimeSecs % 86400) / 3600), m = Math.floor((uptimeSecs % 3600) / 60);
@@ -446,22 +492,17 @@
         let baseTraffic = Math.floor(Math.random() * 30) + 10;
         let isHighTraffic = Math.random() > 0.85; 
         if (isHighTraffic) baseTraffic += 120; 
-
         document.getElementById('activeUsers').innerText = baseTraffic * 12;
 
-        deployChart.data.datasets[0].data.shift();
-        deployChart.data.datasets[0].data.push(baseTraffic);
-        deployChart.update();
+        deployChart.data.datasets[0].data.shift(); deployChart.data.datasets[0].data.push(baseTraffic); deployChart.update();
 
         let cpu = isHighTraffic ? Math.floor(Math.random() * 20) + 75 : Math.floor(Math.random() * 20) + 10;
         let ram = isHighTraffic ? Math.floor(Math.random() * 20) + 60 : Math.floor(Math.random() * 10) + 40;
-        resourceChart.data.datasets[0].data = [cpu, ram, 35];
-        resourceChart.update();
+        resourceChart.data.datasets[0].data = [cpu, ram, 35]; resourceChart.update();
 
         let ddosThreat = isHighTraffic ? 95 : Math.floor(Math.random() * 15);
         let bruteThreat = Math.floor(Math.random() * 20);
-        threatChart.data.datasets[0].data = [ddosThreat, 10, 5, bruteThreat];
-        threatChart.update();
+        threatChart.data.datasets[0].data = [ddosThreat, 10, 5, bruteThreat]; threatChart.update();
 
         if (isHighTraffic) {
             document.getElementById('deployStatusBanner').innerText = "STATUS: LOAD BALANCING...";
@@ -472,19 +513,12 @@
         }
     }
 
-    /* =========================================
-       5. LOGGING SYSTEM
-       ========================================= */
     function log(msg, type="info") {
         const con = document.getElementById('consoleLog');
         const div = document.createElement('div');
         div.innerText = `[${new Date().toLocaleTimeString('en-GB')}] ${msg}`;
-        if (type === "warn") div.className = "log-warn";
-        if (type === "err") div.className = "log-err";
-        if (type === "sys") div.className = "log-sys";
-        
-        con.appendChild(div);
-        con.scrollTop = con.scrollHeight;
+        if (type === "warn") div.className = "log-warn"; if (type === "err") div.className = "log-err"; if (type === "sys") div.className = "log-sys";
+        con.appendChild(div); con.scrollTop = con.scrollHeight;
     }
     function logWarn(msg) { log(msg, "warn"); }
     function logError(msg) { log(msg, "err"); }
