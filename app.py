@@ -4,6 +4,9 @@ import os
 import time
 import psutil
 from collections import deque
+from dotenv import load_dotenv # <-- Add this
+
+load_dotenv()
 
 app = Flask(__name__)
 
