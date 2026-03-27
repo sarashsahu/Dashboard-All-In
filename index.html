@@ -210,8 +210,13 @@
     </div>
 
     <div class="widget">
-        <div class="widget-title">ACTIVE USERS</div>
-        <div id="activeUsers" class="widget-value">0</div>
+        <div class="widget-title">STOPWATCH</div>
+        <div id="stopwatchDisplay" class="widget-value" style="font-size: 1.2rem; margin-bottom: 10px;">00:00:00.000</div>
+        <div style="display: flex; gap: 5px;">
+            <button onclick="startStopwatch()" style="flex: 1; padding: 5px;">START</button>
+            <button onclick="pauseStopwatch()" style="flex: 1; padding: 5px;">PAUSE</button>
+            <button onclick="resetStopwatch()" class="danger" style="flex: 1; padding: 5px;">RST</button>
+        </div>
     </div>
 
     <div class="widget">
@@ -296,7 +301,56 @@
     Chart.defaults.font.family = "'Share Tech Mono', monospace";
 
     /* =========================================
-       1. DESTRUCT PROTOCOL
+       1. STOPWATCH LOGIC
+       ========================================= */
+    let swStartTime = 0;
+    let swElapsedTime = 0;
+    let swInterval;
+    const swDisplay = document.getElementById('stopwatchDisplay');
+
+    function updateStopwatch() {
+        const time = Date.now() - swStartTime + swElapsedTime;
+        
+        let h = Math.floor(time / 3600000);
+        let m = Math.floor((time % 3600000) / 60000);
+        let s = Math.floor((time % 60000) / 1000);
+        let ms = time % 1000;
+
+        h = h.toString().padStart(2, '0');
+        m = m.toString().padStart(2, '0');
+        s = s.toString().padStart(2, '0');
+        ms = ms.toString().padStart(3, '0');
+
+        swDisplay.innerText = `${h}:${m}:${s}.${ms}`;
+    }
+
+    function startStopwatch() {
+        if (!swInterval) {
+            swStartTime = Date.now();
+            swInterval = setInterval(updateStopwatch, 10); // Update every 10ms for smooth ms tracking
+            log("Stopwatch initialized and started.", "sys");
+        }
+    }
+
+    function pauseStopwatch() {
+        if (swInterval) {
+            swElapsedTime += Date.now() - swStartTime;
+            clearInterval(swInterval);
+            swInterval = null;
+            log("Stopwatch paused.", "sys");
+        }
+    }
+
+    function resetStopwatch() {
+        clearInterval(swInterval);
+        swInterval = null;
+        swElapsedTime = 0;
+        swDisplay.innerText = "00:00:00.000";
+        log("Stopwatch parameters reset.", "sys");
+    }
+
+    /* =========================================
+       2. DESTRUCT PROTOCOL
        ========================================= */
     let destructInterval;
     function initiateDestruct() {
@@ -326,7 +380,7 @@
     }
 
     /* =========================================
-       2. CALCULATOR & QUEUE LOGIC
+       3. CALCULATOR & QUEUE LOGIC
        ========================================= */
     let exp = '';
     const calcDisp = document.getElementById('calcDisplay');
@@ -361,7 +415,7 @@
     renderTasks();
 
     /* =========================================
-       3. WIDGET RESIZE & DRAG-AND-DROP SYSTEM
+       4. WIDGET RESIZE & DRAG-AND-DROP SYSTEM
        ========================================= */
     const dashboard = document.getElementById('mainDashboard');
     const cards = document.querySelectorAll('.card');
@@ -410,12 +464,10 @@
         }
     });
 
-    // Determines where to drop the dragged element based on cursor position
     function getDragAfterElement(container, x, y) {
         const draggableElements = [...container.querySelectorAll('.card:not(.dragging)')];
         return draggableElements.reduce((closest, child) => {
             const box = child.getBoundingClientRect();
-            // Checking horizontal & vertical centers to handle wrapping flex items
             const boxCenterX = box.left + box.width / 2;
             const boxCenterY = box.top + box.height / 2;
             const distance = Math.hypot(x - boxCenterX, y - boxCenterY);
@@ -455,7 +507,6 @@
     cards.forEach(card => sizeObserver.observe(card));
     setTimeout(() => { isBooting = false; }, 1000); 
 
-    // Reset All Layout Options
     function resetLayout() {
         localStorage.removeItem('nexus_widget_sizes');
         localStorage.removeItem('nexus_widget_order');
@@ -473,7 +524,7 @@
     }
 
     /* =========================================
-       4. SERVER POLLING & CHARTS
+       5. SERVER POLLING & CHARTS
        ========================================= */
     const deployCtx = document.getElementById('deployChart').getContext('2d');
     const deployChart = new Chart(deployCtx, {
@@ -492,7 +543,6 @@
         let baseTraffic = Math.floor(Math.random() * 30) + 10;
         let isHighTraffic = Math.random() > 0.85; 
         if (isHighTraffic) baseTraffic += 120; 
-        document.getElementById('activeUsers').innerText = baseTraffic * 12;
 
         deployChart.data.datasets[0].data.shift(); deployChart.data.datasets[0].data.push(baseTraffic); deployChart.update();
 
