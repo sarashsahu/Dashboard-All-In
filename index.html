@@ -204,6 +204,11 @@
     </div>
 
     <div class="widget">
+        <div class="widget-title">LAYOUT CONTROLS</div>
+        <button onclick="resetLayout()" style="width: 100%; margin-top: 10px;">RESET DASHBOARD</button>
+    </div>
+
+    <div class="widget">
         <div class="widget-title">EMERGENCY PROTOCOL</div>
         <button onclick="logError('MANUAL OVERRIDE TRIGGERED');" class="danger" style="width: 100%; margin-top: 10px;">PURGE CACHE</button>
     </div>
@@ -341,12 +346,10 @@
     renderTasks();
 
     /* =========================================
-       3. WIDGET RESIZE SAVE STATE
+       3. WIDGET RESIZE SAVE & RESET STATE
        ========================================= */
     const savedSizes = JSON.parse(localStorage.getItem('nexus_widget_sizes')) || {};
     const cards = document.querySelectorAll('.card');
-    
-    // Flag to prevent logging layout saves on initial boot
     let isBooting = true; 
 
     // Load saved sizes
@@ -354,11 +357,22 @@
         if (card.id && savedSizes[card.id]) {
             card.style.width = savedSizes[card.id].width;
             card.style.height = savedSizes[card.id].height;
-            card.style.flexGrow = '0'; // Disables auto-fill so exact sizes are respected
+            card.style.flexGrow = '0'; 
         }
     });
 
-    // Observer to save sizes dynamically when dragged
+    // Reset Layout Function
+    function resetLayout() {
+        localStorage.removeItem('nexus_widget_sizes');
+        cards.forEach(card => {
+            card.style.width = '';
+            card.style.height = '';
+            card.style.flexGrow = ''; // Let CSS take back control
+        });
+        log("Dashboard layout parameters reset to default.", "sys");
+    }
+
+    // Observer to save sizes
     let resizeTimeout;
     const sizeObserver = new ResizeObserver(entries => {
         clearTimeout(resizeTimeout);
@@ -368,11 +382,8 @@
 
             entries.forEach(entry => {
                 const card = entry.target;
-                // Only save if an inline width style has been applied (meaning user resized it)
                 if (card.id && card.style.width) {
-                    card.style.flexGrow = '0'; // Snap out of flex-grow
-                    
-                    // Check if size actually changed to avoid spamming logs
+                    card.style.flexGrow = '0'; 
                     if (!sizes[card.id] || sizes[card.id].width !== card.style.width || sizes[card.id].height !== card.style.height) {
                         sizes[card.id] = { width: card.style.width, height: card.style.height };
                         layoutChanged = true;
@@ -384,11 +395,11 @@
                 localStorage.setItem('nexus_widget_sizes', JSON.stringify(sizes));
                 if (!isBooting) log("Dashboard layout state saved locally.", "sys");
             }
-        }, 500); // 500ms Debounce
+        }, 500); 
     });
 
     cards.forEach(card => sizeObserver.observe(card));
-    setTimeout(() => { isBooting = false; }, 1000); // Allow 1 second for initial layout paint
+    setTimeout(() => { isBooting = false; }, 1000); 
 
 
     /* =========================================
