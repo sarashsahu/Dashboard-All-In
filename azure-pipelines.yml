@@ -33,7 +33,7 @@ stages:
   jobs:
   - deployment: DeployDev
     displayName: "Deploy to Dev Namespace"
-    environment: dev-env
+    environment: dev
     strategy:
       runOnce:
         deploy:
@@ -59,7 +59,7 @@ stages:
   jobs:
   - deployment: DeployProd
     displayName: "Deploy to Prod Namespace"
-    environment: prod-env
+    environment: prod
     strategy:
       runOnce:
         deploy:
