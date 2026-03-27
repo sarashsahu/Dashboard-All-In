@@ -380,7 +380,7 @@
     }
 
     /* =========================================
-       3. CALCULATOR & QUEUE LOGIC
+       3. CALCULATOR & DATABASE QUEUE LOGIC
        ========================================= */
     let exp = '';
     const calcDisp = document.getElementById('calcDisplay');
@@ -391,27 +391,80 @@
         catch { exp = ''; calcDisp.innerText = 'ERR'; logError("Co-processor syntax fault."); }
     }
 
-    let tasks = JSON.parse(localStorage.getItem('nexus_tasks')) || [{ id: 1, text: "Initialize database indexing", done: false }];
-    function renderTasks() {
-        const list = document.getElementById('todoList');
-        list.innerHTML = '';
-        tasks.forEach(t => {
-            const d = document.createElement('div');
-            d.className = 'todo-item';
-            d.innerHTML = `<span class="todo-text ${t.done ? 'done' : ''}" onclick="toggleDone(${t.id})">> ${t.text}</span><button onclick="deleteTask(${t.id})" class="danger" style="padding: 2px 8px;">DEL</button>`;
-            list.appendChild(d);
-        });
-        localStorage.setItem('nexus_tasks', JSON.stringify(tasks));
+    async function renderTasks() {
+        try {
+            const response = await fetch('/todos');
+            const tasks = await response.json();
+            const list = document.getElementById('todoList');
+            list.innerHTML = '';
+            
+            tasks.forEach(t => {
+                const d = document.createElement('div');
+                d.className = 'todo-item';
+                d.innerHTML = `
+                    <span class="todo-text ${t.done ? 'done' : ''}" onclick="toggleDone(${t.id})">
+                        > ${t.text}
+                    </span>
+                    <button onclick="deleteTask(${t.id})" class="danger" style="padding: 2px 8px;">DEL</button>
+                `;
+                list.appendChild(d);
+            });
+        } catch (err) {
+            logError("Failed to sync with central database.");
+        }
     }
-    function addTodo() {
+
+    async function addTodo() {
         const input = document.getElementById('todoInput');
-        if (!input.value.trim()) return;
-        tasks.unshift({ id: Date.now(), text: input.value, done: false });
-        input.value = ''; log(`Task added.`, 'sys'); renderTasks();
+        const text = input.value.trim();
+        if (!text) return;
+
+        try {
+            const response = await fetch('/add', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ text: text })
+            });
+            if (response.ok) {
+                input.value = '';
+                log(`Task added to database.`, 'sys');
+                renderTasks();
+            }
+        } catch (err) {
+            logError("Write-access denied: Database unreachable.");
+        }
     }
-    function toggleDone(id) { const task = tasks.find(t => t.id === id); if (task) { task.done = !task.done; renderTasks(); } }
-    function deleteTask(id) { tasks = tasks.filter(t => t.id !== id); log(`Task deleted.`, 'warn'); renderTasks(); }
-    function clearCompletedTasks() { tasks = tasks.filter(t => !t.done); log(`Completed tasks purged.`, 'sys'); renderTasks(); }
+
+    async function toggleDone(id) {
+        try {
+            await fetch(`/toggle/${id}`, { method: 'POST' });
+            renderTasks();
+        } catch (err) {
+            logError("Task update failed.");
+        }
+    }
+
+    async function deleteTask(id) {
+        try {
+            await fetch(`/delete/${id}`, { method: 'DELETE' });
+            log(`Task deleted.`, 'warn');
+            renderTasks();
+        } catch (err) {
+            logError("Delete command failed.");
+        }
+    }
+
+    async function clearCompletedTasks() {
+        try {
+            await fetch('/clear_completed', { method: 'DELETE' });
+            log(`Completed tasks purged from database.`, 'sys');
+            renderTasks();
+        } catch (err) {
+            logError("Batch delete failed.");
+        }
+    }
+
+    // Initial Database Sync on load
     renderTasks();
 
     /* =========================================
