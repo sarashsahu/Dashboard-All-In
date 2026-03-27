@@ -4,13 +4,11 @@ import os
 
 app = Flask(__name__)
 
-# Fetch the database connection string from environment variables
 DB_CONN = os.getenv("DB_CONN")
 
 def get_db_connection():
     return psycopg2.connect(DB_CONN)
 
-# Initialize the database table with the exact columns the Terminal UI needs
 def init_db():
     try:
         conn = get_db_connection()
