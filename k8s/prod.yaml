@@ -19,14 +19,12 @@ spec:
         imagePullPolicy: Always
         ports:
         - containerPort: 80
-
         env:
         - name: DB_CONN
           valueFrom:
             secretKeyRef:
               name: db-secret
               key: DB_CONN
-
         resources:
           requests:
             cpu: "100m"
@@ -34,7 +32,6 @@ spec:
           limits:
             cpu: "500m"
             memory: "512Mi"
-
         readinessProbe:
           httpGet:
             path: /

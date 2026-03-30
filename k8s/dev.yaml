@@ -19,8 +19,6 @@ spec:
         imagePullPolicy: Always
         ports:
         - containerPort: 80
-
-        # 🔥 ADD THIS BLOCK
         env:
         - name: DB_CONN
           valueFrom:
