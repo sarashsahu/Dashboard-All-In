@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>~Terminal</title>
+    <title>~Terminal OS</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
 
@@ -14,7 +14,7 @@
             --neon-green: #00ff9f;
             --neon-red: #ff0055;
             --dark-bg: #03060a;
-            --panel-bg: rgba(5, 10, 15, 0.7);
+            --panel-bg: rgba(5, 10, 15, 0.85);
             --border-glow: 0 0 15px rgba(0, 229, 255, 0.4);
         }
 
@@ -28,7 +28,6 @@
                 radial-gradient(circle at bottom left, rgba(0, 255, 159, 0.05) 0%, transparent 40%);
         }
 
-        /* CRT Overlay & Grid */
         body::after {
             content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             background: 
@@ -43,398 +42,466 @@
         ::-webkit-scrollbar-thumb { background: var(--cyan); }
         ::-webkit-resizer { background: var(--cyan); outline: 1px solid var(--dark-bg); }
 
-        /* Sidebar */
+        /* Sidebar Arsenal */
         .sidebar {
-            width: 280px; background: rgba(0, 5, 10, 0.9); border-right: 1px solid var(--cyan-dim);
-            padding: 20px; display: flex; flex-direction: column; gap: 20px; z-index: 10;
-            backdrop-filter: blur(10px);
+            width: 280px; background: rgba(0, 5, 10, 0.95); border-right: 1px solid var(--cyan-dim);
+            padding: 20px; display: flex; flex-direction: column; gap: 15px; z-index: 101;
+            box-shadow: 5px 0 20px rgba(0,0,0,0.8);
         }
-        .brand {
-            font-size: 1.6rem; letter-spacing: 2px; text-shadow: 0 0 10px var(--cyan);
-            border-bottom: 2px solid var(--cyan); padding-bottom: 10px; text-align: center;
-        }
+        .brand { font-size: 1.6rem; letter-spacing: 2px; text-shadow: 0 0 10px var(--cyan); border-bottom: 2px solid var(--cyan); padding-bottom: 10px; text-align: center; margin-bottom: 10px;}
 
-        .widget {
-            border: 1px solid var(--cyan-dim); padding: 15px; background: rgba(0, 0, 0, 0.5);
-            transition: all 0.3s ease; position: relative; overflow: hidden;
+        .launcher-btn {
+            background: rgba(0, 229, 255, 0.05); border: 1px solid var(--cyan-dim); color: #fff;
+            padding: 10px 15px; cursor: pointer; font-size: 12px; transition: 0.2s; text-align: left;
+            display: flex; justify-content: space-between; align-items: center;
         }
-        .widget:hover { box-shadow: var(--border-glow); border-color: var(--cyan); }
-        .widget-title { font-size: 10px; opacity: 0.7; text-transform: uppercase; color: #fff; }
-        .widget-value { font-size: 1.3rem; margin-top: 5px; color: var(--cyan); text-shadow: 0 0 5px var(--cyan); }
+        .launcher-btn:hover { background: rgba(0, 229, 255, 0.2); border-color: var(--cyan); box-shadow: var(--border-glow); }
+        .launcher-btn.active { border-color: var(--neon-green); color: var(--neon-green); }
+        .launcher-btn.active::after { content: "DEPLOYED"; font-size: 9px; opacity: 0.7; }
 
-        /* Main Area */
+        .system-stats { font-size: 11px; color: var(--neon-green); border-bottom: 1px solid var(--cyan-dim); padding-bottom: 10px; margin-bottom: 10px;}
+
+        /* Main Workspace */
         .main { flex: 1; display: flex; flex-direction: column; position: relative; }
         .topbar {
             padding: 15px 30px; background: rgba(0, 229, 255, 0.05); border-bottom: 1px solid var(--cyan-dim);
-            display: flex; justify-content: space-between; font-size: 12px; backdrop-filter: blur(5px);
+            display: flex; justify-content: space-between; font-size: 12px; backdrop-filter: blur(5px); z-index: 90;
         }
-        .status-dot { display: inline-block; width: 8px; height: 8px; background: var(--neon-green); border-radius: 50%; box-shadow: 0 0 8px var(--neon-green); margin-right: 8px; animation: pulse 2s infinite; }
-        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
+        
+        /* FREE FORM CANVAS */
+        .workspace {
+            position: relative; flex: 1; overflow: hidden; 
+            /* Subtle grid to show it's a canvas */
+            background-image: 
+                linear-gradient(rgba(0, 229, 255, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 229, 255, 0.05) 1px, transparent 1px);
+            background-size: 50px 50px;
+        }
 
-        .content { padding: 30px; overflow-y: auto; overflow-x: hidden; flex: 1; }
-        .dashboard { display: flex; flex-wrap: wrap; gap: 20px; max-width: 1600px; margin: 0 auto; align-items: flex-start; }
-
+        /* Widgets as Windows */
         .card {
-            background: var(--panel-bg); border: 1px solid var(--cyan-dim); padding: 20px; position: relative;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5); display: flex; flex-direction: column; backdrop-filter: blur(8px);
-            resize: both; overflow: auto; min-width: 250px; min-height: 200px;
-            cursor: grab; transition: opacity 0.2s ease, transform 0.2s ease;
+            background: var(--panel-bg); border: 1px solid var(--cyan); position: absolute;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8); display: flex; flex-direction: column; backdrop-filter: blur(8px);
+            resize: both; overflow: auto; min-width: 250px; min-height: 200px; display: none; /* Hidden by default */
         }
-        .card:active { cursor: grabbing; }
-        .card.dragging { opacity: 0.4; transform: scale(0.98); border: 2px dashed var(--neon-green); z-index: 50; }
-        .card::before { content: ""; position: absolute; top: 0px; left: 0px; width: 15px; height: 15px; border-top: 2px solid var(--cyan); border-left: 2px solid var(--cyan); pointer-events: none;}
+        .card.deployed { display: flex; }
+        .card::before { content: ""; position: absolute; top: 0px; left: 0px; width: 10px; height: 10px; border-top: 2px solid var(--cyan); border-left: 2px solid var(--cyan); pointer-events: none;}
         .card::after { content: ""; position: absolute; bottom: 0px; right: 0px; width: 15px; height: 15px; border-bottom: 2px solid var(--cyan); border-right: 2px solid var(--cyan); pointer-events: none; }
-        .title { font-size: 12px; letter-spacing: 2px; margin-bottom: 20px; color: #fff; border-left: 3px solid var(--cyan); padding-left: 10px; flex-shrink: 0; pointer-events: none;}
 
-        .col-8 { width: calc(66.666% - 14px); flex-grow: 1; } 
-        .col-4 { width: calc(33.333% - 14px); flex-grow: 1; }
-
-        /* UI Elements */
-        button {
-            background: rgba(0, 229, 255, 0.05); border: 1px solid var(--cyan); color: var(--cyan);
-            padding: 8px 15px; cursor: pointer; font-size: 11px; font-weight: bold; transition: 0.2s; text-transform: uppercase;
+        .card-header {
+            background: rgba(0, 229, 255, 0.1); padding: 8px 10px; border-bottom: 1px solid var(--cyan-dim);
+            display: flex; justify-content: space-between; align-items: center; cursor: grab;
         }
-        button:hover { background: var(--cyan); color: #000; box-shadow: 0 0 10px var(--cyan); }
-        button.danger { border-color: var(--neon-red); color: var(--neon-red); }
-        button.danger:hover { background: var(--neon-red); color: #000; box-shadow: 0 0 10px var(--neon-red); }
+        .card-header:active { cursor: grabbing; background: rgba(0, 229, 255, 0.2); }
+        .title { font-size: 12px; letter-spacing: 2px; color: #fff; border-left: 3px solid var(--cyan); padding-left: 8px; pointer-events: none; }
+        .close-btn { 
+            background: transparent; border: none; color: var(--cyan); cursor: pointer; font-size: 14px; 
+            padding: 0 5px; transition: 0.2s; 
+        }
+        .close-btn:hover { color: var(--neon-red); text-shadow: 0 0 8px var(--neon-red); }
 
-        input, type[time] { background: rgba(0,0,0,0.8); border: 1px solid var(--cyan-dim); color: var(--cyan); padding: 10px; width: 100%; outline: none; transition: 0.3s; }
+        .card-content { padding: 15px; flex-grow: 1; display: flex; flex-direction: column; overflow: hidden;}
+
+        /* UI Elements (Reused from your design) */
+        button.action-btn { background: rgba(0, 229, 255, 0.05); border: 1px solid var(--cyan); color: var(--cyan); padding: 6px 12px; cursor: pointer; font-size: 11px; transition: 0.2s; text-transform: uppercase; }
+        button.action-btn:hover { background: var(--cyan); color: #000; box-shadow: 0 0 10px var(--cyan); }
+        button.action-btn.danger { border-color: var(--neon-red); color: var(--neon-red); }
+        button.action-btn.danger:hover { background: var(--neon-red); color: #000; box-shadow: 0 0 10px var(--neon-red); }
+
+        input, input[type="time"] { background: rgba(0,0,0,0.8); border: 1px solid var(--cyan-dim); color: var(--cyan); padding: 8px; width: 100%; outline: none; transition: 0.3s; }
         input:focus { border-color: var(--cyan); box-shadow: var(--border-glow); }
 
-        .calc-display { background: rgba(0,0,0,0.8); padding: 15px; text-align: right; font-size: 24px; border: 1px solid var(--cyan-dim); margin-bottom: 15px; min-height: 60px; color: #fff; letter-spacing: 2px; }
-        .calc-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; flex-grow: 1;}
-        .calc-grid button { display: flex; align-items: center; justify-content: center; min-height: 40px;}
+        .calc-display { background: rgba(0,0,0,0.8); padding: 15px; text-align: right; font-size: 24px; border: 1px solid var(--cyan-dim); margin-bottom: 10px; min-height: 60px; color: #fff; letter-spacing: 2px; }
+        .calc-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; flex-grow: 1;}
+        .calc-grid button { border: 1px solid var(--cyan-dim); background: rgba(0,0,0,0.5); color: var(--cyan); cursor: pointer;}
+        .calc-grid button:hover { background: var(--cyan); color:#000; }
 
-        .todo-item { display: flex; align-items: center; justify-content: space-between; padding: 10px; border-bottom: 1px solid var(--cyan-dim); background: rgba(0,0,0,0.4); margin-bottom: 5px; }
+        .todo-item { display: flex; align-items: center; justify-content: space-between; padding: 8px; border-bottom: 1px solid var(--cyan-dim); background: rgba(0,0,0,0.4); margin-bottom: 5px; }
         .todo-text { cursor: pointer; flex: 1; font-size: 12px; }
         .todo-text.done { color: #555; text-decoration: line-through; }
 
-        .console { height: 160px; background: rgba(0,0,0,0.9); border-top: 1px solid var(--cyan); padding: 15px 30px; font-size: 12px; overflow-y: auto; color: var(--neon-green); flex-shrink: 0; }
+        .console { height: 160px; background: rgba(0,0,0,0.9); border-top: 1px solid var(--cyan); padding: 15px 30px; font-size: 12px; overflow-y: auto; color: var(--neon-green); z-index: 90;}
         .console div { margin-bottom: 5px; font-family: monospace; }
         .log-warn { color: #ffcc00; } .log-err { color: var(--neon-red); } .log-sys { color: var(--cyan); }
 
-        .overlay-screen { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(5, 0, 0, 0.95); z-index: 9999; display: none; flex-direction: column; justify-content: center; align-items: center; }
-        .destruct-overlay { color: var(--neon-red); text-shadow: 0 0 20px var(--neon-red); }
-        .alert-overlay { color: var(--cyan); text-shadow: 0 0 20px var(--cyan); background: rgba(0, 15, 25, 0.95); }
-        .warning-text { font-size: 4rem; letter-spacing: 5px; animation: flash 1s infinite; text-align: center; }
-        .countdown { font-size: 15rem; margin-top: 20px; font-weight: bold; }
-        @keyframes flash { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
-
-        /* NEW: Notes, Calendar, Progress */
         textarea.terminal-notes { background: rgba(0,0,0,0.6); border: 1px solid var(--cyan-dim); color: var(--cyan); padding: 15px; width: 100%; height: 100%; resize: none; outline: none; flex-grow: 1; }
-        textarea.terminal-notes:focus { border-color: var(--cyan); }
         
-        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; text-align: center; font-size: 12px; margin-top: 10px; flex-grow: 1;}
-        .cal-header { color: #fff; font-weight: bold; margin-bottom: 5px; border-bottom: 1px solid var(--cyan-dim); padding-bottom: 5px; }
-        .cal-day { padding: 8px 0; background: rgba(0,229,255,0.05); border: 1px solid transparent; cursor: default; }
-        .cal-day:hover { border-color: var(--cyan-dim); }
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; text-align: center; font-size: 12px; margin-top: 10px; flex-grow: 1;}
+        .cal-header { color: #fff; font-weight: bold; border-bottom: 1px solid var(--cyan-dim); padding-bottom: 5px; }
+        .cal-day { padding: 6px 0; background: rgba(0,229,255,0.05); }
         .cal-today { background: var(--cyan); color: #000; font-weight: bold; box-shadow: 0 0 10px var(--cyan); }
 
         .progress-block { margin-bottom: 15px; }
         .progress-label { font-size: 10px; margin-bottom: 5px; display: flex; justify-content: space-between; color: #fff;}
-        .progress-bar-container { background: rgba(0,0,0,0.8); border: 1px solid var(--cyan-dim); height: 12px; width: 100%; position: relative; }
-        .progress-bar-fill { background: var(--cyan); height: 100%; width: 0%; transition: width 0.5s ease-out; box-shadow: 0 0 8px var(--cyan); }
+        .progress-bar-container { background: rgba(0,0,0,0.8); border: 1px solid var(--cyan-dim); height: 10px; width: 100%; }
+        .progress-bar-fill { background: var(--cyan); height: 100%; transition: width 0.5s; box-shadow: 0 0 8px var(--cyan); }
 
-        .reminder-inputs { display: flex; gap: 10px; margin-bottom: 15px; }
-        .reminder-inputs input[type="time"] { width: 120px; color: var(--cyan); }
-        .reminder-inputs input[type="time"]::-webkit-calendar-picker-indicator { filter: invert(70%) sepia(90%) saturate(3000%) hue-rotate(150deg); cursor: pointer; }
-
-        @media (max-width: 1200px) { .col-8, .col-4 { width: 100%; } }
-        @media (max-width: 800px) { .sidebar { display: none; } }
+        .overlay-screen { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(5, 0, 0, 0.95); z-index: 9999; display: none; flex-direction: column; justify-content: center; align-items: center; }
+        .alert-overlay { color: var(--cyan); text-shadow: 0 0 20px var(--cyan); }
     </style>
 </head>
 <body>
 
 <div class="sidebar">
     <div class="brand">Admin@sys:~$</div>
-    <div class="widget"><div class="widget-title">CONNECTION</div><div class="widget-value" id="statusText" style="color:var(--neon-green);"><span class="status-dot"></span>Online</div></div>
-    <div class="widget"><div class="widget-title">SERVER UPTIME</div><div id="uptime" class="widget-value">SYNCING...</div></div>
-    <div class="widget">
-        <div class="widget-title">STOPWATCH</div>
-        <div id="stopwatchDisplay" class="widget-value" style="font-size: 1.2rem; margin-bottom: 10px;">00:00:00.000</div>
-        <div style="display: flex; gap: 5px;"><button onclick="startStopwatch()" style="flex: 1; padding: 5px;">START</button><button onclick="pauseStopwatch()" style="flex: 1; padding: 5px;">PAUSE</button><button onclick="resetStopwatch()" class="danger" style="flex: 1; padding: 5px;">RST</button></div>
+    
+    <div class="system-stats">
+        <div>STATUS: <span style="color:var(--neon-green)">ONLINE</span></div>
+        <div>UPTIME: <span id="uptime">0d 00:00:00</span></div>
     </div>
-    <div class="widget"><div class="widget-title">LAYOUT CONTROLS</div><button onclick="resetLayout()" style="width: 100%; margin-top: 10px;">RESET DASHBOARD</button></div>
-    <div class="widget" style="border-color: var(--neon-red); box-shadow: 0 0 10px rgba(255,0,85,0.2);">
-        <div class="widget-title" style="color: var(--neon-red);">EMERGENCY PROTOCOL</div>
-        <button onclick="initiateDestruct();" class="danger" style="width: 100%; margin-top: 10px;">PURGE SYSTEM</button>
+
+    <div style="font-size: 10px; color: #888; margin-bottom: 5px;">MODULE LAUNCHER</div>
+    <button class="launcher-btn" onclick="toggleWidget('widget-traffic')">Traffic Metrics</button>
+    <button class="launcher-btn" onclick="toggleWidget('widget-hw')">Hardware Res</button>
+    <button class="launcher-btn" onclick="toggleWidget('widget-threat')">Threat Radar</button>
+    <button class="launcher-btn" onclick="toggleWidget('widget-queue')">Process Queue</button>
+    <button class="launcher-btn" onclick="toggleWidget('widget-progress')">System Build</button>
+    <button class="launcher-btn" onclick="toggleWidget('widget-notes')">Secure Scratchpad</button>
+    <button class="launcher-btn" onclick="toggleWidget('widget-calendar')">Sys Calendar</button>
+    <button class="launcher-btn" onclick="toggleWidget('widget-reminders')">Alerts Setup</button>
+    <button class="launcher-btn" onclick="toggleWidget('widget-calc')">Co-Processor</button>
+    <button class="launcher-btn" onclick="toggleWidget('widget-stopwatch')">Chronometer</button>
+
+    <div style="margin-top: auto;">
+        <button onclick="resetLayout()" class="launcher-btn" style="width: 100%; justify-content: center; color: var(--neon-red); border-color: var(--neon-red); margin-bottom: 10px;">RESET LAYOUT</button>
     </div>
 </div>
 
 <div class="main">
     <div class="topbar">
-        <span>NODE: NEXUS-PROD-01 // IP: [REDACTED]</span>
-        <span id="deployStatusBanner" style="color: var(--neon-green);">STATUS: MONITORING LIVE TRAFFIC</span>
-        <span id="clockBanner">PROTOCOL: WSS://SECURE</span>
+        <span>NODE: NEXUS-PROD-01 // [FREE-FORM MODE]</span>
+        <span id="deployStatusBanner" style="color: var(--neon-green);">AWAITING COMMANDS...</span>
+        <span id="clockBanner">00:00:00</span>
     </div>
 
-    <div class="content">
-        <div class="dashboard" id="mainDashboard">
-            
-            <div class="card col-8" id="widget-traffic" draggable="true">
-                <div class="title">LIVE SERVER METRICS (TRAFFIC)</div>
-                <div style="flex-grow: 1; min-height: 200px; position: relative; width: 100%; height: 100%;"><canvas id="deployChart"></canvas></div>
-            </div>
+    <div class="workspace" id="workspace">
 
-            <div class="card col-4" id="widget-hw" draggable="true">
-                <div class="title">HARDWARE RESOURCES</div>
-                <div style="flex-grow: 1; min-height: 200px; position: relative; width: 100%; height: 100%;"><canvas id="chart2"></canvas></div>
-            </div>
+        <div class="card" id="widget-traffic" style="width: 500px; height: 300px;">
+            <div class="card-header"><span class="title">TRAFFIC METRICS</span><button class="close-btn" onclick="toggleWidget('widget-traffic')">✖</button></div>
+            <div class="card-content"><div style="position: relative; width: 100%; height: 100%;"><canvas id="deployChart"></canvas></div></div>
+        </div>
 
-            <div class="card col-4" id="widget-progress" draggable="true">
-                <div class="title">SYSTEM PROGRESS</div>
-                <div style="flex-grow: 1; display: flex; flex-direction: column; justify-content: center;">
-                    <div class="progress-block">
-                        <div class="progress-label"><span>SYS. BUILD COMPILE</span><span>85%</span></div>
-                        <div class="progress-bar-container"><div class="progress-bar-fill" style="width: 85%;"></div></div>
-                    </div>
-                    <div class="progress-block">
-                        <div class="progress-label"><span>DB MIGRATION</span><span>42%</span></div>
-                        <div class="progress-bar-container"><div class="progress-bar-fill" style="width: 42%; background: var(--neon-red); box-shadow: 0 0 8px var(--neon-red);"></div></div>
-                    </div>
-                    <div class="progress-block">
-                        <div class="progress-label"><span>PROCESS QUEUE YIELD</span><span id="queueProgressText">0%</span></div>
-                        <div class="progress-bar-container"><div class="progress-bar-fill" id="queueProgressBar" style="width: 0%; background: var(--neon-green); box-shadow: 0 0 8px var(--neon-green);"></div></div>
-                    </div>
+        <div class="card" id="widget-hw" style="width: 350px; height: 300px;">
+            <div class="card-header"><span class="title">HARDWARE RESOURCES</span><button class="close-btn" onclick="toggleWidget('widget-hw')">✖</button></div>
+            <div class="card-content"><div style="position: relative; width: 100%; height: 100%;"><canvas id="chart2"></canvas></div></div>
+        </div>
+
+        <div class="card" id="widget-threat" style="width: 350px; height: 300px;">
+            <div class="card-header"><span class="title">THREAT ANALYSIS</span><button class="close-btn" onclick="toggleWidget('widget-threat')">✖</button></div>
+            <div class="card-content"><div style="position: relative; width: 100%; height: 100%;"><canvas id="chart3"></canvas></div></div>
+        </div>
+
+        <div class="card" id="widget-progress" style="width: 350px; height: 250px;">
+            <div class="card-header"><span class="title">SYSTEM BUILD</span><button class="close-btn" onclick="toggleWidget('widget-progress')">✖</button></div>
+            <div class="card-content" style="justify-content: center;">
+                <div class="progress-block">
+                    <div class="progress-label"><span>SYS. COMPILE</span><span>85%</span></div>
+                    <div class="progress-bar-container"><div class="progress-bar-fill" style="width: 85%;"></div></div>
+                </div>
+                <div class="progress-block">
+                    <div class="progress-label"><span>QUEUE YIELD</span><span id="queueProgressText">0%</span></div>
+                    <div class="progress-bar-container"><div class="progress-bar-fill" id="queueProgressBar" style="width: 0%; background: var(--neon-green);"></div></div>
                 </div>
             </div>
+        </div>
 
-            <div class="card col-4" id="widget-queue" draggable="true">
-                <div class="title">PROCESS QUEUE</div>
-                <div style="display:flex; gap: 10px; margin-bottom: 15px; flex-shrink: 0;">
+        <div class="card" id="widget-queue" style="width: 400px; height: 350px;">
+            <div class="card-header"><span class="title">PROCESS QUEUE</span><button class="close-btn" onclick="toggleWidget('widget-queue')">✖</button></div>
+            <div class="card-content">
+                <div style="display:flex; gap: 10px; margin-bottom: 10px;">
                     <input id="todoInput" placeholder="Enter command..." onkeypress="if(event.key === 'Enter') addTodo()">
-                    <button onclick="addTodo()">EXEC</button>
-                    <button onclick="clearCompletedTasks()" class="danger">CLN</button>
+                    <button class="action-btn" onclick="addTodo()">EXEC</button>
+                    <button class="action-btn danger" onclick="clearCompletedTasks()">CLN</button>
                 </div>
-                <div id="todoList" style="flex-grow: 1; overflow-y: auto; min-height: 100px;"></div>
+                <div id="todoList" style="flex-grow: 1; overflow-y: auto;"></div>
             </div>
+        </div>
 
-            <div class="card col-4" id="widget-reminders" draggable="true">
-                <div class="title">ALERTS & REMINDERS</div>
-                <div class="reminder-inputs">
-                    <input type="time" id="remTime" required>
-                    <input type="text" id="remText" placeholder="Alert Subject..." onkeypress="if(event.key === 'Enter') addReminder()">
-                    <button onclick="addReminder()">SET</button>
+        <div class="card" id="widget-notes" style="width: 450px; height: 400px;">
+            <div class="card-header"><span class="title">SECURE SCRATCHPAD</span><button class="close-btn" onclick="toggleWidget('widget-notes')">✖</button></div>
+            <div class="card-content" style="padding: 0;"><textarea id="notesArea" class="terminal-notes" placeholder="> Enter local notes here..."></textarea></div>
+        </div>
+
+        <div class="card" id="widget-reminders" style="width: 350px; height: 300px;">
+            <div class="card-header"><span class="title">ALERTS</span><button class="close-btn" onclick="toggleWidget('widget-reminders')">✖</button></div>
+            <div class="card-content">
+                <div style="display: flex; gap: 5px; margin-bottom: 10px;">
+                    <input type="time" id="remTime" style="width: 100px;">
+                    <input type="text" id="remText" placeholder="Subject...">
+                    <button class="action-btn" onclick="addReminder()">SET</button>
                 </div>
-                <div id="reminderList" style="flex-grow: 1; overflow-y: auto; min-height: 100px;"></div>
+                <div id="reminderList" style="flex-grow: 1; overflow-y: auto;"></div>
             </div>
+        </div>
 
-            <div class="card col-4" id="widget-calendar" draggable="true">
-                <div class="title">SYSTEM CALENDAR: <span id="calMonthYear" style="color:var(--neon-green);"></span></div>
+        <div class="card" id="widget-calendar" style="width: 300px; height: 280px;">
+            <div class="card-header"><span class="title">CALENDAR</span><button class="close-btn" onclick="toggleWidget('widget-calendar')">✖</button></div>
+            <div class="card-content">
+                <div id="calMonthYear" style="color:var(--neon-green); text-align: center; margin-bottom: 5px; font-weight: bold;"></div>
                 <div class="calendar-grid">
                     <div class="cal-header">SU</div><div class="cal-header">MO</div><div class="cal-header">TU</div><div class="cal-header">WE</div><div class="cal-header">TH</div><div class="cal-header">FR</div><div class="cal-header">SA</div>
                 </div>
                 <div class="calendar-grid" id="calDays"></div>
             </div>
+        </div>
 
-            <div class="card col-4" id="widget-notes" draggable="true" style="grid-column: span 2;">
-                <div class="title">SECURE SCRATCHPAD</div>
-                <textarea id="notesArea" class="terminal-notes" placeholder="> Enter local notes here...&#10;> Data auto-syncs to database."></textarea>
-            </div>
-
-            <div class="card col-4" id="widget-calc" draggable="true">
-                <div class="title">CO-PROCESSOR</div>
+        <div class="card" id="widget-calc" style="width: 250px; height: 350px;">
+            <div class="card-header"><span class="title">CO-PROCESSOR</span><button class="close-btn" onclick="toggleWidget('widget-calc')">✖</button></div>
+            <div class="card-content">
                 <div id="calcDisplay" class="calc-display">0</div>
                 <div class="calc-grid">
                     <button onclick="p('7')">7</button><button onclick="p('8')">8</button><button onclick="p('9')">9</button><button onclick="p('/')">/</button>
                     <button onclick="p('4')">4</button><button onclick="p('5')">5</button><button onclick="p('6')">6</button><button onclick="p('*')">*</button>
                     <button onclick="p('1')">1</button><button onclick="p('2')">2</button><button onclick="p('3')">3</button><button onclick="p('-')">-</button>
-                    <button onclick="p('0')">0</button><button onclick="calc()">EXE</button><button onclick="clr()" class="danger">CLR</button><button onclick="p('+')">+</button>
+                    <button onclick="p('0')">0</button><button onclick="calc()">EXE</button><button onclick="clr()" style="color:var(--neon-red);">CLR</button><button onclick="p('+')">+</button>
                 </div>
             </div>
-
-            <div class="card col-4" id="widget-threat" draggable="true">
-                <div class="title">THREAT ANALYSIS</div>
-                <div style="flex-grow: 1; min-height: 200px; position: relative; width: 100%; height: 100%;"><canvas id="chart3"></canvas></div>
-            </div>
-
         </div>
+
+        <div class="card" id="widget-stopwatch" style="width: 280px; height: 180px;">
+            <div class="card-header"><span class="title">CHRONOMETER</span><button class="close-btn" onclick="toggleWidget('widget-stopwatch')">✖</button></div>
+            <div class="card-content" style="align-items: center; justify-content: center;">
+                <div id="stopwatchDisplay" style="font-size: 2rem; margin-bottom: 15px; color: #fff; text-shadow: 0 0 10px #fff;">00:00:00.000</div>
+                <div style="display: flex; gap: 10px; width: 100%;">
+                    <button class="action-btn" onclick="startStopwatch()" style="flex: 1;">START</button>
+                    <button class="action-btn" onclick="pauseStopwatch()" style="flex: 1;">PAUSE</button>
+                    <button class="action-btn danger" onclick="resetStopwatch()" style="flex: 1;">RST</button>
+                </div>
+            </div>
+        </div>
+
     </div>
 
     <div class="console" id="consoleLog">
-        <div class="log-sys">[SYSTEM] Booting NEXUS OS_v6.2...</div>
-        <div class="log-sys">[NET] Establishing socket connection to server...</div>
-        <div class="log-sys">[PROC] Sub-modules loaded.</div>
+        <div class="log-sys">[SYSTEM] Booting NEXUS OS_v7.0 [SANDBOX MODE]...</div>
+        <div class="log-sys">[PROC] Layout engine initialized.</div>
     </div>
 </div>
 
-<div id="destructOverlay" class="overlay-screen destruct-overlay">
-    <h1 class="warning-text" id="destructTitle">EMERGENCY OVERRIDE INITIATED</h1>
-    <h2 id="countdownText" class="countdown">10</h2>
-</div>
-
 <div id="alertOverlay" class="overlay-screen alert-overlay">
-    <h1 class="warning-text">SYSTEM ALERT</h1>
+    <h1 style="font-size: 4rem; letter-spacing: 5px; animation: flash 1s infinite;">SYSTEM ALERT</h1>
     <h2 id="alertMessage" style="font-size: 3rem; margin-top: 30px; border-bottom: 2px solid var(--cyan); padding-bottom:10px;">MSG</h2>
-    <button onclick="dismissAlert()" style="margin-top: 40px; font-size: 1.5rem; padding: 15px 40px;">ACKNOWLEDGE</button>
+    <button class="action-btn" onclick="dismissAlert()" style="margin-top: 40px; font-size: 1.5rem; padding: 15px 40px;">ACKNOWLEDGE</button>
 </div>
+<style>@keyframes flash { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }</style>
 
 <script>
     Chart.defaults.color = '#00e5ff'; Chart.defaults.borderColor = 'rgba(0, 229, 255, 0.1)'; Chart.defaults.font.family = "'Share Tech Mono', monospace";
 
-    /* --- UTILS --- */
+    /* --- WINDOW MANAGER (DRAG & DROP, RESIZE, STATE) --- */
+    const workspace = document.getElementById('workspace');
+    const cards = document.querySelectorAll('.card');
+    let highestZ = 10;
+    
+    // Load Saved Layout State
+    let layoutState = JSON.parse(localStorage.getItem('nexus_layout')) || {};
+
+    function saveLayout() {
+        cards.forEach(c => {
+            layoutState[c.id] = {
+                active: c.classList.contains('deployed'),
+                x: c.style.left, y: c.style.top,
+                w: c.style.width, h: c.style.height,
+                z: c.style.zIndex
+            };
+        });
+        localStorage.setItem('nexus_layout', JSON.stringify(layoutState));
+    }
+
+    // Apply Saved State on Boot
+    cards.forEach(card => {
+        const state = layoutState[card.id];
+        if (state) {
+            if (state.active) { card.classList.add('deployed'); updateLauncherState(card.id, true); }
+            if (state.x) card.style.left = state.x;
+            if (state.y) card.style.top = state.y;
+            if (state.w) card.style.width = state.w;
+            if (state.h) card.style.height = state.h;
+            if (state.z) { card.style.zIndex = state.z; highestZ = Math.max(highestZ, parseInt(state.z) || 10); }
+        }
+        
+        // Track resizes
+        new ResizeObserver(() => saveLayout()).observe(card);
+
+        // Bring to front on click
+        card.addEventListener('mousedown', () => { card.style.zIndex = ++highestZ; saveLayout(); });
+    });
+
+    // Custom Desktop-Style Dragging
+    let isDragging = false, currentDragCard = null, dragOffsetX = 0, dragOffsetY = 0;
+
+    document.querySelectorAll('.card-header').forEach(header => {
+        header.addEventListener('mousedown', (e) => {
+            if(e.target.classList.contains('close-btn')) return; // ignore close button clicks
+            isDragging = true;
+            currentDragCard = header.parentElement;
+            currentDragCard.style.zIndex = ++highestZ;
+            
+            const rect = currentDragCard.getBoundingClientRect();
+            const workspaceRect = workspace.getBoundingClientRect();
+            
+            dragOffsetX = e.clientX - rect.left;
+            dragOffsetY = e.clientY - rect.top;
+            
+            // Fix absolute positioning relative to workspace if it wasn't already
+            currentDragCard.style.left = (rect.left - workspaceRect.left) + 'px';
+            currentDragCard.style.top = (rect.top - workspaceRect.top) + 'px';
+            
+            document.body.style.cursor = 'grabbing';
+        });
+    });
+
+    document.addEventListener('mousemove', (e) => {
+        if (!isDragging || !currentDragCard) return;
+        const workspaceRect = workspace.getBoundingClientRect();
+        
+        // Calculate new position bounded by workspace
+        let newX = e.clientX - workspaceRect.left - dragOffsetX;
+        let newY = e.clientY - workspaceRect.top - dragOffsetY;
+        
+        // Optional bounding box logic (keeps widgets inside screen)
+        newX = Math.max(0, Math.min(newX, workspaceRect.width - 50));
+        newY = Math.max(0, Math.min(newY, workspaceRect.height - 30));
+
+        currentDragCard.style.left = `${newX}px`;
+        currentDragCard.style.top = `${newY}px`;
+    });
+
+    document.addEventListener('mouseup', () => {
+        if(isDragging) {
+            isDragging = false; currentDragCard = null;
+            document.body.style.cursor = 'default';
+            saveLayout(); // Save after moving
+        }
+    });
+
+    // Toggle Widgets (Sidebar / Close buttons)
+    function toggleWidget(id) {
+        const card = document.getElementById(id);
+        const isActive = card.classList.contains('deployed');
+        
+        if (isActive) {
+            card.classList.remove('deployed');
+            updateLauncherState(id, false);
+            log(`Module [${id}] terminated.`, "warn");
+        } else {
+            card.classList.add('deployed');
+            card.style.zIndex = ++highestZ;
+            
+            // If it has no saved position, spawn it in the center
+            if(!card.style.left) {
+                const wBox = workspace.getBoundingClientRect();
+                card.style.left = (wBox.width/2 - parseInt(card.style.width)/2) + 'px';
+                card.style.top = (wBox.height/2 - parseInt(card.style.height)/2) + 'px';
+            }
+            updateLauncherState(id, true);
+            log(`Module [${id}] deployed.`, "sys");
+        }
+        saveLayout();
+    }
+
+    function updateLauncherState(id, isActive) {
+        const btns = document.querySelectorAll(`.launcher-btn`);
+        btns.forEach(btn => {
+            if(btn.getAttribute('onclick').includes(id)) {
+                isActive ? btn.classList.add('active') : btn.classList.remove('active');
+            }
+        });
+    }
+
+    function resetLayout() {
+        localStorage.removeItem('nexus_layout');
+        location.reload();
+    }
+
+    /* --- UTILS & CORE LOGIC --- */
     function log(msg, type="info") { const con = document.getElementById('consoleLog'); const div = document.createElement('div'); div.innerText = `[${new Date().toLocaleTimeString('en-GB')}] ${msg}`; if (type === "warn") div.className = "log-warn"; if (type === "err") div.className = "log-err"; if (type === "sys") div.className = "log-sys"; con.appendChild(div); con.scrollTop = con.scrollHeight; }
     function logWarn(msg) { log(msg, "warn"); } function logError(msg) { log(msg, "err"); }
 
-    /* --- CLOCK & ALERTS --- */
-    function updateClock() {
-        const now = new Date();
-        document.getElementById('clockBanner').innerText = `LOCAL TIME: ${now.toLocaleTimeString('en-GB')}`;
-    }
-    setInterval(updateClock, 1000); updateClock();
-
-    function triggerAlert(msg) {
-        document.getElementById('alertMessage').innerText = msg;
-        document.getElementById('alertOverlay').style.display = 'flex';
-        logWarn(`ALERT TRIGGERED: ${msg}`);
-    }
-    function dismissAlert() { document.getElementById('alertOverlay').style.display = 'none'; }
+    setInterval(() => document.getElementById('clockBanner').innerText = `SYS. TIME: ${new Date().toLocaleTimeString('en-GB')}`, 1000);
 
     /* --- CALENDAR --- */
     function renderCalendar() {
-        const d = new Date();
-        const monthNames = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
+        const d = new Date(); const monthNames = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
         document.getElementById('calMonthYear').innerText = `${monthNames[d.getMonth()]} ${d.getFullYear()}`;
-        
-        const firstDay = new Date(d.getFullYear(), d.getMonth(), 1).getDay();
-        const daysInMonth = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();
-        
-        let calHtml = "";
-        for(let i=0; i<firstDay; i++) calHtml += `<div></div>`; // blanks
-        for(let i=1; i<=daysInMonth; i++) {
-            if(i === d.getDate()) calHtml += `<div class="cal-day cal-today">${i}</div>`;
-            else calHtml += `<div class="cal-day">${i}</div>`;
-        }
+        const firstDay = new Date(d.getFullYear(), d.getMonth(), 1).getDay(); const daysInMonth = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();
+        let calHtml = ""; for(let i=0; i<firstDay; i++) calHtml += `<div></div>`;
+        for(let i=1; i<=daysInMonth; i++) calHtml += `<div class="cal-day ${i === d.getDate() ? 'cal-today' : ''}">${i}</div>`;
         document.getElementById('calDays').innerHTML = calHtml;
-    }
-    renderCalendar();
+    } renderCalendar();
 
     /* --- NOTES --- */
-    const notesArea = document.getElementById('notesArea');
-    let noteTimeout;
-    async function loadNotes() {
-        try { const res = await fetch('/note'); const data = await res.json(); notesArea.value = data.content; } catch(e) {}
-    }
+    const notesArea = document.getElementById('notesArea'); let noteTimeout;
+    async function loadNotes() { try { const res = await fetch('/note'); const data = await res.json(); notesArea.value = data.content; } catch(e) {} }
     notesArea.addEventListener('input', () => {
         clearTimeout(noteTimeout);
         noteTimeout = setTimeout(async () => {
-            try {
-                await fetch('/note', { method: 'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({content: notesArea.value}) });
-                log("Scratchpad synced to DB.", "sys");
-            } catch(e) { logError("Scratchpad sync failed."); }
+            try { await fetch('/note', { method: 'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({content: notesArea.value}) }); log("Scratchpad synced.", "sys"); } catch(e) {}
         }, 1500);
-    });
-    loadNotes();
+    }); loadNotes();
 
-    /* --- REMINDERS --- */
+    /* --- REMINDERS & ALERTS --- */
     let activeReminders = [];
+    function triggerAlert(msg) { document.getElementById('alertMessage').innerText = msg; document.getElementById('alertOverlay').style.display = 'flex'; logWarn(`ALERT: ${msg}`); }
+    function dismissAlert() { document.getElementById('alertOverlay').style.display = 'none'; }
     async function loadReminders() {
-        try { 
-            const res = await fetch('/reminders'); activeReminders = await res.json(); 
-            const list = document.getElementById('reminderList'); list.innerHTML = '';
-            activeReminders.forEach(r => {
-                const d = document.createElement('div'); d.className = 'todo-item';
-                d.innerHTML = `<span class="todo-text">[${r.time}] ${r.text}</span><button onclick="deleteReminder(${r.id})" class="danger" style="padding: 2px 8px;">DEL</button>`;
-                list.appendChild(d);
-            });
+        try { const res = await fetch('/reminders'); activeReminders = await res.json(); const list = document.getElementById('reminderList'); list.innerHTML = '';
+            activeReminders.forEach(r => { list.innerHTML += `<div class="todo-item"><span class="todo-text">[${r.time}] ${r.text}</span><button onclick="deleteReminder(${r.id})" class="action-btn danger" style="padding: 2px 8px;">X</button></div>`; });
         } catch(e) {}
     }
     async function addReminder() {
-        const timeVal = document.getElementById('remTime').value;
-        const textVal = document.getElementById('remText').value;
+        const timeVal = document.getElementById('remTime').value, textVal = document.getElementById('remText').value;
         if(!timeVal || !textVal) return;
-        try {
-            await fetch('/reminders', { method: 'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({text: textVal, time: timeVal}) });
-            document.getElementById('remText').value = ''; loadReminders(); log(`Alert set for ${timeVal}`, 'sys');
-        } catch(e){}
+        try { await fetch('/reminders', { method: 'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({text: textVal, time: timeVal}) }); document.getElementById('remText').value = ''; loadReminders(); log(`Alert set.`, 'sys'); } catch(e){}
     }
     async function deleteReminder(id) { try { await fetch(`/reminders/${id}`, { method: 'DELETE' }); loadReminders(); } catch(e){} }
-    
-    // Check reminders every 10 seconds
     setInterval(() => {
-        const now = new Date();
-        const curTime = `${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}`;
-        activeReminders.forEach(r => {
-            if(r.time === curTime) { triggerAlert(r.text); deleteReminder(r.id); } // Trigger and remove
-        });
-    }, 10000);
-    loadReminders();
+        const now = new Date(), curTime = `${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}`;
+        activeReminders.forEach(r => { if(r.time === curTime) { triggerAlert(r.text); deleteReminder(r.id); } });
+    }, 10000); loadReminders();
 
-    /* --- PROCESS QUEUE (TODO) & PROGRESS --- */
+    /* --- QUEUE --- */
     async function renderTasks() {
-        try { 
-            const response = await fetch('/todos'); const tasks = await response.json(); 
-            const list = document.getElementById('todoList'); list.innerHTML = '';
-            let completed = 0;
-            tasks.forEach(t => { 
-                if(t.done) completed++;
-                const d = document.createElement('div'); d.className = 'todo-item'; 
-                d.innerHTML = `<span class="todo-text ${t.done ? 'done' : ''}" onclick="toggleDone(${t.id})">> ${t.text}</span><button onclick="deleteTask(${t.id})" class="danger" style="padding: 2px 8px;">DEL</button>`; 
-                list.appendChild(d); 
-            }); 
-            
-            // Update Progress Bar based on tasks
+        try { const response = await fetch('/todos'); const tasks = await response.json(); const list = document.getElementById('todoList'); list.innerHTML = ''; let completed = 0;
+            tasks.forEach(t => { if(t.done) completed++; list.innerHTML += `<div class="todo-item"><span class="todo-text ${t.done ? 'done' : ''}" onclick="toggleDone(${t.id})">> ${t.text}</span><button onclick="deleteTask(${t.id})" class="action-btn danger" style="padding: 2px 8px;">X</button></div>`; }); 
             let pct = tasks.length === 0 ? 0 : Math.round((completed / tasks.length) * 100);
-            document.getElementById('queueProgressBar').style.width = `${pct}%`;
-            document.getElementById('queueProgressText').innerText = `${pct}%`;
-
-        } catch (err) { logError("Failed to sync with central database."); }
+            document.getElementById('queueProgressBar').style.width = `${pct}%`; document.getElementById('queueProgressText').innerText = `${pct}%`;
+        } catch (err) {}
     }
-    async function addTodo() { const input = document.getElementById('todoInput'); const text = input.value.trim(); if (!text) return; try { const response = await fetch('/add', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text: text }) }); if (response.ok) { input.value = ''; log(`Task added.`, 'sys'); renderTasks(); } } catch (err) {} }
+    async function addTodo() { const text = document.getElementById('todoInput').value.trim(); if (!text) return; try { await fetch('/add', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text: text }) }); document.getElementById('todoInput').value = ''; log(`Process added.`, 'sys'); renderTasks(); } catch (err) {} }
     async function toggleDone(id) { try { await fetch(`/toggle/${id}`, { method: 'POST' }); renderTasks(); } catch (err) {} }
-    async function deleteTask(id) { try { await fetch(`/delete/${id}`, { method: 'DELETE' }); log(`Task deleted.`, 'warn'); renderTasks(); } catch (err) {} }
-    async function clearCompletedTasks() { try { await fetch('/clear_completed', { method: 'DELETE' }); log(`Completed tasks purged.`, 'sys'); renderTasks(); } catch (err) {} }
+    async function deleteTask(id) { try { await fetch(`/delete/${id}`, { method: 'DELETE' }); renderTasks(); } catch (err) {} }
+    async function clearCompletedTasks() { try { await fetch('/clear_completed', { method: 'DELETE' }); log(`Memory purged.`, 'sys'); renderTasks(); } catch (err) {} }
     renderTasks();
-
-    /* --- STOPWATCH & DESTRUCT --- */
-    let swStartTime = 0; let swElapsedTime = 0; let swInterval; const swDisplay = document.getElementById('stopwatchDisplay');
-    function updateStopwatch() { const time = Date.now() - swStartTime + swElapsedTime; let h = Math.floor(time / 3600000).toString().padStart(2, '0'); let m = Math.floor((time % 3600000) / 60000).toString().padStart(2, '0'); let s = Math.floor((time % 60000) / 1000).toString().padStart(2, '0'); let ms = (time % 1000).toString().padStart(3, '0'); swDisplay.innerText = `${h}:${m}:${s}.${ms}`; }
-    function startStopwatch() { if (!swInterval) { swStartTime = Date.now(); swInterval = setInterval(updateStopwatch, 10); log("Stopwatch initialized.", "sys"); } }
-    function pauseStopwatch() { if (swInterval) { swElapsedTime += Date.now() - swStartTime; clearInterval(swInterval); swInterval = null; log("Stopwatch paused.", "sys"); } }
-    function resetStopwatch() { clearInterval(swInterval); swInterval = null; swElapsedTime = 0; swDisplay.innerText = "00:00:00.000"; log("Stopwatch reset.", "sys"); }
-
-    let destructInterval;
-    function initiateDestruct() { const overlay = document.getElementById('destructOverlay'); const cdText = document.getElementById('countdownText'); const titleText = document.getElementById('destructTitle'); overlay.style.display = 'flex'; let count = 10; cdText.innerText = count; logError("CRITICAL: SELF-DESTRUCT SEQUENCE INITIATED."); destructInterval = setInterval(() => { count--; if (count > 0) { cdText.innerText = count; logError(`Detonation in ${count}...`); } else { clearInterval(destructInterval); cdText.innerText = "OFFLINE"; titleText.innerText = "SYSTEM PURGED"; titleText.style.animation = "none"; logError("SYSTEM OFFLINE."); } }, 1000); }
 
     /* --- CALCULATOR --- */
     let exp = ''; const calcDisp = document.getElementById('calcDisplay');
     function p(x) { exp += x; calcDisp.innerText = exp; }
     function clr() { exp = ''; calcDisp.innerText = '0'; }
-    function calc() { try { exp = eval(exp) + ''; calcDisp.innerText = exp; log("Co-processor cycle complete.", "sys"); } catch { exp = ''; calcDisp.innerText = 'ERR'; logError("Co-processor syntax fault."); } }
+    function calc() { try { exp = eval(exp) + ''; calcDisp.innerText = exp; } catch { exp = ''; calcDisp.innerText = 'ERR'; } }
 
-    /* --- WIDGET DRAG & DROP --- */
-    const dashboard = document.getElementById('mainDashboard'); const cards = document.querySelectorAll('.card'); 
-    const defaultOrder = ['widget-traffic', 'widget-hw', 'widget-progress', 'widget-queue', 'widget-reminders', 'widget-calendar', 'widget-notes', 'widget-calc', 'widget-threat'];
-    const savedSizes = JSON.parse(localStorage.getItem('nexus_widget_sizes')) || {}; const savedOrder = JSON.parse(localStorage.getItem('nexus_widget_order'));
-    if (savedOrder) { savedOrder.forEach(id => { const el = document.getElementById(id); if (el) dashboard.appendChild(el); }); }
-    cards.forEach(card => { if (card.id && savedSizes[card.id]) { card.style.width = savedSizes[card.id].width; card.style.height = savedSizes[card.id].height; card.style.flexGrow = '0'; } card.addEventListener('dragstart', () => card.classList.add('dragging')); card.addEventListener('dragend', () => { card.classList.remove('dragging'); const currentOrder = [...dashboard.querySelectorAll('.card')].map(c => c.id); localStorage.setItem('nexus_widget_order', JSON.stringify(currentOrder)); }); });
-    dashboard.addEventListener('dragover', e => { e.preventDefault(); const afterElement = getDragAfterElement(dashboard, e.clientX, e.clientY); const draggable = document.querySelector('.dragging'); if (afterElement == null) { dashboard.appendChild(draggable); } else { dashboard.insertBefore(draggable, afterElement); } });
-    function getDragAfterElement(container, x, y) { const draggableElements = [...container.querySelectorAll('.card:not(.dragging)')]; return draggableElements.reduce((closest, child) => { const box = child.getBoundingClientRect(); const boxCenterX = box.left + box.width / 2; const boxCenterY = box.top + box.height / 2; const distance = Math.hypot(x - boxCenterX, y - boxCenterY); if (distance < closest.distance) return { distance: distance, element: child }; else return closest; }, { distance: Number.POSITIVE_INFINITY }).element; }
-    let resizeTimeout; const sizeObserver = new ResizeObserver(entries => { clearTimeout(resizeTimeout); resizeTimeout = setTimeout(() => { let sizes = JSON.parse(localStorage.getItem('nexus_widget_sizes')) || {}; entries.forEach(entry => { const card = entry.target; if (card.id && card.style.width) { card.style.flexGrow = '0'; sizes[card.id] = { width: card.style.width, height: card.style.height }; } }); localStorage.setItem('nexus_widget_sizes', JSON.stringify(sizes)); }, 500); });
-    cards.forEach(card => sizeObserver.observe(card));
-    function resetLayout() { localStorage.removeItem('nexus_widget_sizes'); localStorage.removeItem('nexus_widget_order'); defaultOrder.forEach(id => { const el = document.getElementById(id); if (el) { el.style.width = ''; el.style.height = ''; el.style.flexGrow = ''; dashboard.appendChild(el); } }); log("Dashboard reset.", "sys"); }
+    /* --- STOPWATCH --- */
+    let swStart = 0, swElapsed = 0, swInt; const swDisp = document.getElementById('stopwatchDisplay');
+    function updateSW() { const t = Date.now() - swStart + swElapsed; swDisp.innerText = `${Math.floor(t/3600000).toString().padStart(2,'0')}:${Math.floor((t%3600000)/60000).toString().padStart(2,'0')}:${Math.floor((t%60000)/1000).toString().padStart(2,'0')}.${(t%1000).toString().padStart(3,'0')}`; }
+    function startStopwatch() { if(!swInt) { swStart = Date.now(); swInt = setInterval(updateSW, 10); log("Timer on."); } }
+    function pauseStopwatch() { if(swInt) { swElapsed += Date.now() - swStart; clearInterval(swInt); swInt = null; } }
+    function resetStopwatch() { clearInterval(swInt); swInt = null; swElapsed = 0; swDisp.innerText = "00:00:00.000"; }
 
-    /* --- REAL SERVER POLLING & CHARTS --- */
-    const deployCtx = document.getElementById('deployChart').getContext('2d');
-    const deployChart = new Chart(deployCtx, { type: 'line', data: { labels: ['T-8s', 'T-6s', 'T-4s', 'T-2s', 'NOW'], datasets: [{ label: 'SERVER REQUESTS /s', data: [0, 0, 0, 0, 0], borderColor: '#00e5ff', backgroundColor: 'rgba(0, 229, 255, 0.1)', fill: true, tension: 0.4, borderWidth: 2, pointRadius: 0 }] }, options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, suggestedMax: 10 } }, animation: { duration: 0 } } });
-    const resourceChart = new Chart(document.getElementById('chart2'), { type: 'doughnut', data: { labels: ['CPU', 'RAM', 'DISK'], datasets: [{ data: [0, 0, 0], backgroundColor: ['#00e5ff', '#00ff9f', '#114455'], borderWidth: 0 }] }, options: { responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: { position: 'bottom', labels:{color:'#fff'} } } } });
-    const threatChart = new Chart(document.getElementById('chart3'), { type: 'radar', data: { labels: ['DDoS', 'XSS', 'SQLi', 'Brute'], datasets: [{ label: 'RISK', data: [0, 0, 0, 0], borderColor: '#ff0055', backgroundColor: 'rgba(255,0,85,0.2)', pointBackgroundColor: '#ff0055' }] }, options: { responsive: true, maintainAspectRatio: false, scales: { r: { min: 0, max: 100, ticks: {display: false}, grid: {color: 'rgba(0,229,255,0.2)'}, angleLines: {color: 'rgba(0,229,255,0.2)'}, pointLabels: {color: '#fff'} } }, plugins: { legend: {display:false} } } });
+    /* --- CHARTS & SERVER DATA --- */
+    const dCtx = document.getElementById('deployChart').getContext('2d');
+    const deployChart = new Chart(dCtx, { type: 'line', data: { labels: ['T-8', 'T-6', 'T-4', 'T-2', 'NOW'], datasets: [{ label: 'REQ/s', data: [0,0,0,0,0], borderColor: '#00e5ff', backgroundColor: 'rgba(0,229,255,0.1)', fill: true, tension: 0.4 }] }, options: { responsive: true, maintainAspectRatio: false, animation: { duration: 0 } } });
+    const resChart = new Chart(document.getElementById('chart2'), { type: 'doughnut', data: { labels: ['CPU', 'RAM', 'DISK'], datasets: [{ data: [0,0,0], backgroundColor: ['#00e5ff', '#00ff9f', '#114455'], borderWidth: 0 }] }, options: { responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: { position: 'right', labels:{color:'#fff'} } } } });
+    const thChart = new Chart(document.getElementById('chart3'), { type: 'radar', data: { labels: ['DDoS', 'XSS', 'SQLi', 'Brute'], datasets: [{ data: [0,0,0,0], borderColor: '#ff0055', backgroundColor: 'rgba(255,0,85,0.2)' }] }, options: { responsive: true, maintainAspectRatio: false, scales: { r: { min: 0, max: 100, ticks:{display:false}, grid:{color:'rgba(0,229,255,0.2)'}, pointLabels:{color:'#fff'} } }, plugins: { legend: {display:false} } } });
 
     async function fetchServerMetrics() {
         try {
-            const response = await fetch('/api/metrics'); const data = await response.json();
-            let uptimeSecs = Math.floor(data.uptime); let d = Math.floor(uptimeSecs / 86400), h = Math.floor((uptimeSecs % 86400) / 3600), m = Math.floor((uptimeSecs % 3600) / 60);
-            document.getElementById('uptime').innerText = `${d}d ${h<10?'0'+h:h}:${m<10?'0'+m:m}:${uptimeSecs%60<10?'0'+(uptimeSecs%60):uptimeSecs%60}`;
-            
+            const res = await fetch('/api/metrics'); const data = await res.json();
+            let u = Math.floor(data.uptime); document.getElementById('uptime').innerText = `${Math.floor(u/86400)}d ${Math.floor((u%86400)/3600)}h`;
             deployChart.data.datasets[0].data.shift(); deployChart.data.datasets[0].data.push(data.traffic); deployChart.update();
-            resourceChart.data.datasets[0].data = data.hardware; resourceChart.update();
-            threatChart.data.datasets[0].data = data.threats; threatChart.update();
-            
-            if (data.hardware[0] > 80 || data.traffic > 50) { document.getElementById('deployStatusBanner').innerText = "STATUS: LOAD BALANCING (HIGH STRESS)"; document.getElementById('deployStatusBanner').style.color = "#ffcc00"; } 
-            else { document.getElementById('deployStatusBanner').innerText = "STATUS: MONITORING LIVE TRAFFIC"; document.getElementById('deployStatusBanner').style.color = "var(--neon-green)"; }
+            resChart.data.datasets[0].data = data.hardware; resChart.update();
+            thChart.data.datasets[0].data = data.threats; thChart.update();
         } catch(e) {}
-    }
-    setInterval(fetchServerMetrics, 2000);
+    } setInterval(fetchServerMetrics, 2000);
 </script>
 </body>
 </html>
