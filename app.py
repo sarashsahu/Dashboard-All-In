@@ -4,7 +4,7 @@ import os
 import time
 import psutil
 from collections import deque
-from dotenv import load_dotenv # <-- Add this
+from dotenv import load_dotenv
 
 load_dotenv()
 
@@ -14,7 +14,7 @@ DB_CONN = os.getenv("DB_CONN", "dbname=postgres user=postgres password=postgres 
 
 # --- SERVER METRICS TRACKING ---
 SERVER_START_TIME = time.time()
-traffic_history = deque(maxlen=1000)  # Store timestamps of recent requests
+traffic_history = deque(maxlen=1000)
 threat_counters = {"4xx": 0, "5xx": 0, "suspicious_paths": 0}
 
 def get_db_connection():
@@ -24,6 +24,8 @@ def init_db():
     try:
         conn = get_db_connection()
         cursor = conn.cursor()
+        
+        # 1. Tasks Table
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS terminal_tasks (
                 id SERIAL PRIMARY KEY,
@@ -32,21 +34,41 @@ def init_db():
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         """)
+        
+        # 2. Notes Table
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS terminal_notes (
+                id SERIAL PRIMARY KEY,
+                content TEXT DEFAULT ''
+            )
+        """)
+        # Ensure at least one note record exists
+        cursor.execute("SELECT COUNT(*) FROM terminal_notes")
+        if cursor.fetchone()[0] == 0:
+            cursor.execute("INSERT INTO terminal_notes (content) VALUES ('')")
+            
+        # 3. Reminders Table
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS terminal_reminders (
+                id SERIAL PRIMARY KEY,
+                text VARCHAR(255) NOT NULL,
+                alert_time VARCHAR(5) NOT NULL, -- Format HH:MM
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+        
         conn.commit()
         cursor.close()
         conn.close()
     except Exception as e:
         print(f"Database connection error: {e}")
 
-# Intercept every request to calculate live traffic and basic threats
 @app.before_request
 def track_metrics():
     traffic_history.append(time.time())
-    
-    # Basic Threat Detection Simulation (Looking for common malicious paths)
     suspicious_keywords = ['<script>', 'UNION SELECT', 'admin.php', '.env']
     if any(keyword in request.url for keyword in suspicious_keywords):
-        threat_counters["suspicious_paths"] += 10 # Spike the threat meter
+        threat_counters["suspicious_paths"] += 10
 
 @app.after_request
 def track_errors(response):
@@ -56,7 +78,7 @@ def track_errors(response):
         threat_counters["5xx"] += 1
     return response
 
-# --- ROUTES ---
+# --- DASHBOARD & METRICS ---
 
 @app.route("/")
 def home():
@@ -65,27 +87,19 @@ def home():
 @app.route("/api/metrics", methods=["GET"])
 def get_metrics():
     now = time.time()
-    
-    # 1. Uptime
     uptime_seconds = now - SERVER_START_TIME
-    
-    # 2. Hardware Resources
-    cpu_usage = psutil.cpu_percent(interval=None) # Non-blocking
+    cpu_usage = psutil.cpu_percent(interval=None)
     ram_usage = psutil.virtual_memory().percent
     disk_usage = psutil.disk_usage('/').percent
     
-    # 3. Live Traffic (Requests in the last 2 seconds)
     recent_requests = sum(1 for t in traffic_history if now - t <= 2.0)
     requests_per_second = recent_requests / 2.0 if recent_requests > 0 else 0
 
-    # 4. Threat Analysis (Translating errors to radar chart metrics 0-100)
-    # This maps to: ['DDoS', 'XSS', 'SQLi', 'Brute']
-    ddos_risk = min((requests_per_second * 2), 100) # High RPS spikes DDoS metric
+    ddos_risk = min((requests_per_second * 2), 100)
     xss_risk = min(threat_counters["suspicious_paths"], 100) 
-    sqli_risk = min(threat_counters["5xx"] * 5, 100) # Server errors map to SQLi risk
-    brute_risk = min(threat_counters["4xx"] * 2, 100) # 401/403/404s map to Brute force risk
+    sqli_risk = min(threat_counters["5xx"] * 5, 100)
+    brute_risk = min(threat_counters["4xx"] * 2, 100)
     
-    # Gradually cool down threats over time so the chart doesn't stay pegged at 100
     for key in threat_counters:
         if threat_counters[key] > 0:
             threat_counters[key] *= 0.9 
@@ -105,8 +119,7 @@ def get_todos():
         conn = get_db_connection()
         cursor = conn.cursor()
         cursor.execute("SELECT id, text, done FROM terminal_tasks ORDER BY created_at DESC")
-        data = cursor.fetchall()
-        tasks = [{"id": row[0], "text": row[1], "done": row[2]} for row in data]
+        tasks = [{"id": row[0], "text": row[1], "done": row[2]} for row in cursor.fetchall()]
         cursor.close()
         conn.close()
         return jsonify(tasks)
@@ -155,8 +168,57 @@ def clear_completed():
     conn.close()
     return jsonify({"status": "success"})
 
+# --- NOTES ROUTES ---
+
+@app.route("/note", methods=["GET", "POST"])
+def manage_note():
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    if request.method == "POST":
+        content = request.json.get("content", "")
+        cursor.execute("UPDATE terminal_notes SET content = %s WHERE id = 1", (content,))
+        conn.commit()
+        result = {"status": "success"}
+    else:
+        cursor.execute("SELECT content FROM terminal_notes WHERE id = 1")
+        row = cursor.fetchone()
+        result = {"content": row[0] if row else ""}
+    cursor.close()
+    conn.close()
+    return jsonify(result)
+
+# --- REMINDERS ROUTES ---
+
+@app.route("/reminders", methods=["GET", "POST"])
+def manage_reminders():
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    if request.method == "POST":
+        text = request.json.get("text")
+        alert_time = request.json.get("time")
+        if text and alert_time:
+            cursor.execute("INSERT INTO terminal_reminders (text, alert_time) VALUES (%s, %s)", (text, alert_time))
+            conn.commit()
+        result = {"status": "success"}
+    else:
+        cursor.execute("SELECT id, text, alert_time FROM terminal_reminders ORDER BY alert_time ASC")
+        result = [{"id": row[0], "text": row[1], "time": row[2]} for row in cursor.fetchall()]
+    cursor.close()
+    conn.close()
+    return jsonify(result)
+
+@app.route("/reminders/<int:r_id>", methods=["DELETE"])
+def delete_reminder(r_id):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM terminal_reminders WHERE id = %s", (r_id,))
+    conn.commit()
+    cursor.close()
+    conn.close()
+    return jsonify({"status": "success"})
+
+
 if __name__ == '__main__':
     init_db() 
-    # Initialize CPU percentage baseline
     psutil.cpu_percent(interval=0.1) 
     app.run(host="0.0.0.0", port=80, threaded=True)
