@@ -13,6 +13,7 @@
             --cyan-dim: rgba(0, 229, 255, 0.15);
             --neon-green: #00ff9f;
             --neon-red: #ff0055;
+            --neon-yellow: #ffcc00;
             --dark-bg: #03060a;
             --panel-bg: rgba(5, 10, 15, 0.85);
             --border-glow: 0 0 15px rgba(0, 229, 255, 0.4);
@@ -21,19 +22,16 @@
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Share Tech Mono', monospace; }
 
         body {
-            background-color: var(--dark-bg);
-            color: var(--cyan); height: 100vh; display: flex; overflow: hidden;
-            background-image: 
-                radial-gradient(circle at top right, rgba(0, 229, 255, 0.05) 0%, transparent 40%),
-                radial-gradient(circle at bottom left, rgba(0, 255, 159, 0.05) 0%, transparent 40%);
+            background-color: var(--dark-bg); color: var(--cyan); height: 100vh; display: flex; overflow: hidden;
+            background-image: radial-gradient(circle at top right, rgba(0, 229, 255, 0.05) 0%, transparent 40%),
+                              radial-gradient(circle at bottom left, rgba(0, 255, 159, 0.05) 0%, transparent 40%);
         }
 
         body::after {
             content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: 
-                linear-gradient(rgba(0, 229, 255, 0.03) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(0, 229, 255, 0.03) 1px, transparent 1px),
-                repeating-linear-gradient(0deg, rgba(0,0,0,0.15), rgba(0,0,0,0.15) 1px, transparent 1px, transparent 2px);
+            background: linear-gradient(rgba(0, 229, 255, 0.03) 1px, transparent 1px),
+                        linear-gradient(90deg, rgba(0, 229, 255, 0.03) 1px, transparent 1px),
+                        repeating-linear-gradient(0deg, rgba(0,0,0,0.15), rgba(0,0,0,0.15) 1px, transparent 1px, transparent 2px);
             background-size: 30px 30px, 30px 30px, 100% 100%; pointer-events: none; z-index: 100;
         }
 
@@ -45,8 +43,7 @@
         /* Sidebar Arsenal */
         .sidebar {
             width: 280px; background: rgba(0, 5, 10, 0.95); border-right: 1px solid var(--cyan-dim);
-            padding: 20px; display: flex; flex-direction: column; gap: 15px; z-index: 101;
-            box-shadow: 5px 0 20px rgba(0,0,0,0.8);
+            padding: 20px; display: flex; flex-direction: column; gap: 15px; z-index: 101; box-shadow: 5px 0 20px rgba(0,0,0,0.8);
         }
         .brand { font-size: 1.6rem; letter-spacing: 2px; text-shadow: 0 0 10px var(--cyan); border-bottom: 2px solid var(--cyan); padding-bottom: 10px; text-align: center; margin-bottom: 10px;}
 
@@ -59,7 +56,7 @@
         .launcher-btn.active { border-color: var(--neon-green); color: var(--neon-green); }
         .launcher-btn.active::after { content: "DEPLOYED"; font-size: 9px; opacity: 0.7; }
 
-        .system-stats { font-size: 11px; color: var(--neon-green); border-bottom: 1px solid var(--cyan-dim); padding-bottom: 10px; margin-bottom: 10px;}
+        .system-stats { font-size: 11px; color: #fff; border-bottom: 1px solid var(--cyan-dim); padding-bottom: 10px; margin-bottom: 5px; line-height: 1.6;}
 
         /* Main Workspace */
         .main { flex: 1; display: flex; flex-direction: column; position: relative; }
@@ -69,40 +66,26 @@
         }
         
         /* FREE FORM CANVAS */
-        .workspace {
-            position: relative; flex: 1; overflow: hidden; 
-            /* Subtle grid to show it's a canvas */
-            background-image: 
-                linear-gradient(rgba(0, 229, 255, 0.05) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(0, 229, 255, 0.05) 1px, transparent 1px);
-            background-size: 50px 50px;
-        }
+        .workspace { position: relative; flex: 1; overflow: hidden; background-image: linear-gradient(rgba(0, 229, 255, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 229, 255, 0.05) 1px, transparent 1px); background-size: 50px 50px; }
 
         /* Widgets as Windows */
         .card {
-            background: var(--panel-bg); border: 1px solid var(--cyan); position: absolute;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.8); display: flex; flex-direction: column; backdrop-filter: blur(8px);
-            resize: both; overflow: auto; min-width: 250px; min-height: 200px; display: none; /* Hidden by default */
+            background: var(--panel-bg); border: 1px solid var(--cyan); position: absolute; box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+            display: flex; flex-direction: column; backdrop-filter: blur(8px); resize: both; overflow: auto; min-width: 250px; min-height: 200px; display: none;
         }
         .card.deployed { display: flex; }
         .card::before { content: ""; position: absolute; top: 0px; left: 0px; width: 10px; height: 10px; border-top: 2px solid var(--cyan); border-left: 2px solid var(--cyan); pointer-events: none;}
         .card::after { content: ""; position: absolute; bottom: 0px; right: 0px; width: 15px; height: 15px; border-bottom: 2px solid var(--cyan); border-right: 2px solid var(--cyan); pointer-events: none; }
 
-        .card-header {
-            background: rgba(0, 229, 255, 0.1); padding: 8px 10px; border-bottom: 1px solid var(--cyan-dim);
-            display: flex; justify-content: space-between; align-items: center; cursor: grab;
-        }
+        .card-header { background: rgba(0, 229, 255, 0.1); padding: 8px 10px; border-bottom: 1px solid var(--cyan-dim); display: flex; justify-content: space-between; align-items: center; cursor: grab; }
         .card-header:active { cursor: grabbing; background: rgba(0, 229, 255, 0.2); }
         .title { font-size: 12px; letter-spacing: 2px; color: #fff; border-left: 3px solid var(--cyan); padding-left: 8px; pointer-events: none; }
-        .close-btn { 
-            background: transparent; border: none; color: var(--cyan); cursor: pointer; font-size: 14px; 
-            padding: 0 5px; transition: 0.2s; 
-        }
+        .close-btn { background: transparent; border: none; color: var(--cyan); cursor: pointer; font-size: 14px; padding: 0 5px; transition: 0.2s; }
         .close-btn:hover { color: var(--neon-red); text-shadow: 0 0 8px var(--neon-red); }
 
         .card-content { padding: 15px; flex-grow: 1; display: flex; flex-direction: column; overflow: hidden;}
 
-        /* UI Elements (Reused from your design) */
+        /* UI Elements */
         button.action-btn { background: rgba(0, 229, 255, 0.05); border: 1px solid var(--cyan); color: var(--cyan); padding: 6px 12px; cursor: pointer; font-size: 11px; transition: 0.2s; text-transform: uppercase; }
         button.action-btn:hover { background: var(--cyan); color: #000; box-shadow: 0 0 10px var(--cyan); }
         button.action-btn.danger { border-color: var(--neon-red); color: var(--neon-red); }
@@ -146,24 +129,28 @@
     <div class="brand">Admin@sys:~$</div>
     
     <div class="system-stats">
-        <div>STATUS: <span style="color:var(--neon-green)">ONLINE</span></div>
+        <div>STATE: <span id="userStatusSpan" style="color:var(--neon-green); font-weight: bold; text-shadow: 0 0 8px var(--neon-green);">ONLINE</span></div>
         <div>UPTIME: <span id="uptime">0d 00:00:00</span></div>
     </div>
 
-    <div style="font-size: 10px; color: #888; margin-bottom: 5px;">MODULE LAUNCHER</div>
-    <button class="launcher-btn" onclick="toggleWidget('widget-traffic')">Traffic Metrics</button>
-    <button class="launcher-btn" onclick="toggleWidget('widget-hw')">Hardware Res</button>
-    <button class="launcher-btn" onclick="toggleWidget('widget-threat')">Threat Radar</button>
-    <button class="launcher-btn" onclick="toggleWidget('widget-queue')">Process Queue</button>
-    <button class="launcher-btn" onclick="toggleWidget('widget-progress')">System Build</button>
-    <button class="launcher-btn" onclick="toggleWidget('widget-notes')">Secure Scratchpad</button>
-    <button class="launcher-btn" onclick="toggleWidget('widget-calendar')">Sys Calendar</button>
-    <button class="launcher-btn" onclick="toggleWidget('widget-reminders')">Alerts Setup</button>
-    <button class="launcher-btn" onclick="toggleWidget('widget-calc')">Co-Processor</button>
-    <button class="launcher-btn" onclick="toggleWidget('widget-stopwatch')">Chronometer</button>
+    <div style="font-size: 10px; color: #888; margin-bottom: 2px;">MODULE LAUNCHER</div>
+    <div style="overflow-y: auto; display: flex; flex-direction: column; gap: 8px; flex-grow: 1; padding-right: 5px;">
+        <button class="launcher-btn" onclick="toggleWidget('widget-traffic')">Traffic Metrics</button>
+        <button class="launcher-btn" onclick="toggleWidget('widget-hw')">Hardware Res</button>
+        <button class="launcher-btn" onclick="toggleWidget('widget-focus')">Focus Tracker</button>
+        <button class="launcher-btn" onclick="toggleWidget('widget-spotify')">Audio Link</button>
+        <button class="launcher-btn" onclick="toggleWidget('widget-queue')">Process Queue</button>
+        <button class="launcher-btn" onclick="toggleWidget('widget-notes')">Secure Scratchpad</button>
+        <button class="launcher-btn" onclick="toggleWidget('widget-calendar')">Sys Calendar</button>
+        <button class="launcher-btn" onclick="toggleWidget('widget-reminders')">Alerts Setup</button>
+        <button class="launcher-btn" onclick="toggleWidget('widget-calc')">Co-Processor</button>
+        <button class="launcher-btn" onclick="toggleWidget('widget-stopwatch')">Chronometer</button>
+        <button class="launcher-btn" onclick="toggleWidget('widget-threat')">Threat Radar</button>
+        <button class="launcher-btn" onclick="toggleWidget('widget-progress')">System Build</button>
+    </div>
 
-    <div style="margin-top: auto;">
-        <button onclick="resetLayout()" class="launcher-btn" style="width: 100%; justify-content: center; color: var(--neon-red); border-color: var(--neon-red); margin-bottom: 10px;">RESET LAYOUT</button>
+    <div style="margin-top: 10px;">
+        <button onclick="resetLayout()" class="launcher-btn" style="width: 100%; justify-content: center; color: var(--neon-red); border-color: var(--neon-red);">RESET LAYOUT</button>
     </div>
 </div>
 
@@ -175,6 +162,34 @@
     </div>
 
     <div class="workspace" id="workspace">
+
+        <div class="card" id="widget-focus" style="width: 320px; height: 260px;">
+            <div class="card-header"><span class="title">FOCUS TRACKER</span><button class="close-btn" onclick="toggleWidget('widget-focus')">✖</button></div>
+            <div class="card-content" style="align-items: center; justify-content: center;">
+                <div style="display:flex; gap: 10px; margin-bottom: 15px; width: 100%;">
+                    <button class="action-btn" id="modeWork" onclick="setFocusMode('Work', 25)" style="flex:1; border-color: var(--cyan);">WORK</button>
+                    <button class="action-btn" id="modeGame" onclick="setFocusMode('Game', 60)" style="flex:1;">GAME</button>
+                    <button class="action-btn" id="modeOther" onclick="setFocusMode('Other', 15)" style="flex:1;">OTHER</button>
+                </div>
+                <div id="focusDisplay" style="font-size: 3.5rem; margin-bottom: 15px; color: var(--neon-green); text-shadow: 0 0 15px var(--neon-green); font-weight: bold;">25:00</div>
+                <div style="display: flex; gap: 10px; width: 100%;">
+                    <button class="action-btn" onclick="startFocus()" style="flex: 1;">START</button>
+                    <button class="action-btn" onclick="pauseFocus()" style="flex: 1;">PAUSE</button>
+                    <button class="action-btn danger" onclick="resetFocus()" style="flex: 1;">RST</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="card" id="widget-spotify" style="width: 350px; height: 420px;">
+            <div class="card-header"><span class="title">AUDIO LINK (SPOTIFY)</span><button class="close-btn" onclick="toggleWidget('widget-spotify')">✖</button></div>
+            <div class="card-content" style="padding:0;">
+                <div style="padding: 10px; display: flex; gap: 5px; background: rgba(0,0,0,0.5); border-bottom: 1px solid var(--cyan-dim);">
+                    <input type="text" id="spotifyUri" placeholder="Paste Spotify Track/Playlist URL..." style="font-size:10px; padding:5px;">
+                    <button class="action-btn" onclick="loadSpotify()" style="padding: 5px 10px;">LOAD</button>
+                </div>
+                <iframe id="spotifyFrame" style="border-radius:0; flex-grow:1;" src="https://open.spotify.com/embed/playlist/37i9dQZF1DWWQRwui0ExPn?utm_source=generator&theme=0" width="100%" height="100%" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+            </div>
+        </div>
 
         <div class="card" id="widget-traffic" style="width: 500px; height: 300px;">
             <div class="card-header"><span class="title">TRAFFIC METRICS</span><button class="close-btn" onclick="toggleWidget('widget-traffic')">✖</button></div>
@@ -273,8 +288,9 @@
     </div>
 
     <div class="console" id="consoleLog">
-        <div class="log-sys">[SYSTEM] Booting NEXUS OS_v7.0 [SANDBOX MODE]...</div>
+        <div class="log-sys">[SYSTEM] Booting NEXUS OS_v7.5 [SANDBOX MODE]...</div>
         <div class="log-sys">[PROC] Layout engine initialized.</div>
+        <div class="log-sys">[PROC] State Manager & Audio Link initialized.</div>
     </div>
 </div>
 
@@ -288,65 +304,130 @@
 <script>
     Chart.defaults.color = '#00e5ff'; Chart.defaults.borderColor = 'rgba(0, 229, 255, 0.1)'; Chart.defaults.font.family = "'Share Tech Mono', monospace";
 
+    /* --- IDLE TRACKER / USER STATUS --- */
+    let currentUserStatus = 'ONLINE'; 
+    let afkTimer;
+    const AFK_TIMEOUT = 5 * 60 * 1000; // 5 mins
+
+    function setStatus(status) {
+        if(currentUserStatus === 'BUSY' && status === 'AWAY') return; // Don't go AFK if in a focus session
+        currentUserStatus = status;
+        const statusSpan = document.getElementById('userStatusSpan');
+        statusSpan.innerText = status;
+        
+        if(status === 'ONLINE') { statusSpan.style.color = 'var(--neon-green)'; statusSpan.style.textShadow = '0 0 8px var(--neon-green)'; }
+        if(status === 'BUSY') { statusSpan.style.color = 'var(--neon-red)'; statusSpan.style.textShadow = '0 0 8px var(--neon-red)'; }
+        if(status === 'AWAY') { statusSpan.style.color = 'var(--neon-yellow)'; statusSpan.style.textShadow = '0 0 8px var(--neon-yellow)'; }
+        log(`User tagged as [${status}].`, 'sys');
+    }
+
+    function resetAfkTimer() {
+        if(currentUserStatus === 'AWAY') setStatus('ONLINE');
+        clearTimeout(afkTimer);
+        if(currentUserStatus !== 'BUSY') { afkTimer = setTimeout(() => setStatus('AWAY'), AFK_TIMEOUT); }
+    }
+    ['mousemove', 'keydown', 'click', 'scroll'].forEach(evt => document.addEventListener(evt, resetAfkTimer));
+    resetAfkTimer();
+
+
+    /* --- FOCUS MODE TIMER --- */
+    let focusTime = 25 * 60; let focusDefault = 25 * 60; let focusInterval;
+
+    function updateFocusDisplay() {
+        const m = Math.floor(focusTime / 60).toString().padStart(2, '0');
+        const s = (focusTime % 60).toString().padStart(2, '0');
+        document.getElementById('focusDisplay').innerText = `${m}:${s}`;
+    }
+
+    function setFocusMode(mode, mins) {
+        if(focusInterval) pauseFocus();
+        focusDefault = mins * 60; focusTime = focusDefault; updateFocusDisplay();
+        
+        ['modeWork', 'modeGame', 'modeOther'].forEach(id => {
+            document.getElementById(id).style.borderColor = 'var(--cyan-dim)';
+            document.getElementById(id).style.color = 'var(--cyan)';
+        });
+        const activeBtn = document.getElementById('mode' + mode);
+        activeBtn.style.borderColor = 'var(--cyan)';
+        activeBtn.style.color = '#fff';
+        
+        log(`Focus template [${mode}] loaded: ${mins}m.`, 'sys');
+    }
+
+    function startFocus() {
+        if(!focusInterval) {
+            setStatus('BUSY'); // Locks status
+            document.getElementById('focusDisplay').style.color = 'var(--neon-red)';
+            document.getElementById('focusDisplay').style.textShadow = '0 0 15px var(--neon-red)';
+            focusInterval = setInterval(() => {
+                if(focusTime > 0) {
+                    focusTime--; updateFocusDisplay();
+                } else {
+                    pauseFocus(); triggerAlert("FOCUS CYCLE COMPLETE"); setStatus('ONLINE');
+                }
+            }, 1000);
+            log("Focus mode engaged.", "warn");
+        }
+    }
+
+    function pauseFocus() {
+        if(focusInterval) {
+            clearInterval(focusInterval); focusInterval = null;
+            setStatus('ONLINE');
+            document.getElementById('focusDisplay').style.color = 'var(--neon-green)';
+            document.getElementById('focusDisplay').style.textShadow = '0 0 15px var(--neon-green)';
+            log("Focus mode paused.", "sys");
+        }
+    }
+
+    function resetFocus() { pauseFocus(); focusTime = focusDefault; updateFocusDisplay(); }
+    updateFocusDisplay();
+
+
+    /* --- SPOTIFY LOADER --- */
+    function loadSpotify() {
+        const uri = document.getElementById('spotifyUri').value;
+        if (!uri) return;
+        try {
+            const url = new URL(uri);
+            const path = url.pathname; 
+            const embedUrl = `https://open.spotify.com/embed${path}?utm_source=generator&theme=0`;
+            document.getElementById('spotifyFrame').src = embedUrl;
+            document.getElementById('spotifyUri').value = '';
+            log("Audio stream linked successfully.", "sys");
+        } catch(e) { logError("Invalid Spotify URL format."); }
+    }
+
+
     /* --- WINDOW MANAGER (DRAG & DROP, RESIZE, STATE) --- */
-    const workspace = document.getElementById('workspace');
-    const cards = document.querySelectorAll('.card');
-    let highestZ = 10;
-    
-    // Load Saved Layout State
+    const workspace = document.getElementById('workspace'); const cards = document.querySelectorAll('.card'); let highestZ = 10;
     let layoutState = JSON.parse(localStorage.getItem('nexus_layout')) || {};
 
     function saveLayout() {
-        cards.forEach(c => {
-            layoutState[c.id] = {
-                active: c.classList.contains('deployed'),
-                x: c.style.left, y: c.style.top,
-                w: c.style.width, h: c.style.height,
-                z: c.style.zIndex
-            };
-        });
+        cards.forEach(c => { layoutState[c.id] = { active: c.classList.contains('deployed'), x: c.style.left, y: c.style.top, w: c.style.width, h: c.style.height, z: c.style.zIndex }; });
         localStorage.setItem('nexus_layout', JSON.stringify(layoutState));
     }
 
-    // Apply Saved State on Boot
     cards.forEach(card => {
         const state = layoutState[card.id];
         if (state) {
             if (state.active) { card.classList.add('deployed'); updateLauncherState(card.id, true); }
-            if (state.x) card.style.left = state.x;
-            if (state.y) card.style.top = state.y;
-            if (state.w) card.style.width = state.w;
-            if (state.h) card.style.height = state.h;
+            if (state.x) card.style.left = state.x; if (state.y) card.style.top = state.y;
+            if (state.w) card.style.width = state.w; if (state.h) card.style.height = state.h;
             if (state.z) { card.style.zIndex = state.z; highestZ = Math.max(highestZ, parseInt(state.z) || 10); }
         }
-        
-        // Track resizes
         new ResizeObserver(() => saveLayout()).observe(card);
-
-        // Bring to front on click
         card.addEventListener('mousedown', () => { card.style.zIndex = ++highestZ; saveLayout(); });
     });
 
-    // Custom Desktop-Style Dragging
     let isDragging = false, currentDragCard = null, dragOffsetX = 0, dragOffsetY = 0;
-
     document.querySelectorAll('.card-header').forEach(header => {
         header.addEventListener('mousedown', (e) => {
-            if(e.target.classList.contains('close-btn')) return; // ignore close button clicks
-            isDragging = true;
-            currentDragCard = header.parentElement;
-            currentDragCard.style.zIndex = ++highestZ;
-            
-            const rect = currentDragCard.getBoundingClientRect();
-            const workspaceRect = workspace.getBoundingClientRect();
-            
-            dragOffsetX = e.clientX - rect.left;
-            dragOffsetY = e.clientY - rect.top;
-            
-            // Fix absolute positioning relative to workspace if it wasn't already
-            currentDragCard.style.left = (rect.left - workspaceRect.left) + 'px';
-            currentDragCard.style.top = (rect.top - workspaceRect.top) + 'px';
-            
+            if(e.target.classList.contains('close-btn')) return; 
+            isDragging = true; currentDragCard = header.parentElement; currentDragCard.style.zIndex = ++highestZ;
+            const rect = currentDragCard.getBoundingClientRect(); const workspaceRect = workspace.getBoundingClientRect();
+            dragOffsetX = e.clientX - rect.left; dragOffsetY = e.clientY - rect.top;
+            currentDragCard.style.left = (rect.left - workspaceRect.left) + 'px'; currentDragCard.style.top = (rect.top - workspaceRect.top) + 'px';
             document.body.style.cursor = 'grabbing';
         });
     });
@@ -354,70 +435,29 @@
     document.addEventListener('mousemove', (e) => {
         if (!isDragging || !currentDragCard) return;
         const workspaceRect = workspace.getBoundingClientRect();
-        
-        // Calculate new position bounded by workspace
-        let newX = e.clientX - workspaceRect.left - dragOffsetX;
-        let newY = e.clientY - workspaceRect.top - dragOffsetY;
-        
-        // Optional bounding box logic (keeps widgets inside screen)
-        newX = Math.max(0, Math.min(newX, workspaceRect.width - 50));
-        newY = Math.max(0, Math.min(newY, workspaceRect.height - 30));
-
-        currentDragCard.style.left = `${newX}px`;
-        currentDragCard.style.top = `${newY}px`;
+        let newX = e.clientX - workspaceRect.left - dragOffsetX; let newY = e.clientY - workspaceRect.top - dragOffsetY;
+        newX = Math.max(0, Math.min(newX, workspaceRect.width - 50)); newY = Math.max(0, Math.min(newY, workspaceRect.height - 30));
+        currentDragCard.style.left = `${newX}px`; currentDragCard.style.top = `${newY}px`;
     });
+    document.addEventListener('mouseup', () => { if(isDragging) { isDragging = false; currentDragCard = null; document.body.style.cursor = 'default'; saveLayout(); } });
 
-    document.addEventListener('mouseup', () => {
-        if(isDragging) {
-            isDragging = false; currentDragCard = null;
-            document.body.style.cursor = 'default';
-            saveLayout(); // Save after moving
-        }
-    });
-
-    // Toggle Widgets (Sidebar / Close buttons)
     function toggleWidget(id) {
-        const card = document.getElementById(id);
-        const isActive = card.classList.contains('deployed');
-        
-        if (isActive) {
-            card.classList.remove('deployed');
-            updateLauncherState(id, false);
-            log(`Module [${id}] terminated.`, "warn");
-        } else {
-            card.classList.add('deployed');
-            card.style.zIndex = ++highestZ;
-            
-            // If it has no saved position, spawn it in the center
-            if(!card.style.left) {
-                const wBox = workspace.getBoundingClientRect();
-                card.style.left = (wBox.width/2 - parseInt(card.style.width)/2) + 'px';
-                card.style.top = (wBox.height/2 - parseInt(card.style.height)/2) + 'px';
-            }
-            updateLauncherState(id, true);
-            log(`Module [${id}] deployed.`, "sys");
-        }
-        saveLayout();
+        const card = document.getElementById(id); const isActive = card.classList.contains('deployed');
+        if (isActive) { card.classList.remove('deployed'); updateLauncherState(id, false); log(`Module [${id}] terminated.`, "warn"); } 
+        else {
+            card.classList.add('deployed'); card.style.zIndex = ++highestZ;
+            if(!card.style.left) { const wBox = workspace.getBoundingClientRect(); card.style.left = (wBox.width/2 - parseInt(card.style.width)/2) + 'px'; card.style.top = (wBox.height/2 - parseInt(card.style.height)/2) + 'px'; }
+            updateLauncherState(id, true); log(`Module [${id}] deployed.`, "sys");
+        } saveLayout();
     }
 
-    function updateLauncherState(id, isActive) {
-        const btns = document.querySelectorAll(`.launcher-btn`);
-        btns.forEach(btn => {
-            if(btn.getAttribute('onclick').includes(id)) {
-                isActive ? btn.classList.add('active') : btn.classList.remove('active');
-            }
-        });
-    }
+    function updateLauncherState(id, isActive) { document.querySelectorAll(`.launcher-btn`).forEach(btn => { if(btn.getAttribute('onclick').includes(id)) { isActive ? btn.classList.add('active') : btn.classList.remove('active'); } }); }
+    function resetLayout() { localStorage.removeItem('nexus_layout'); location.reload(); }
 
-    function resetLayout() {
-        localStorage.removeItem('nexus_layout');
-        location.reload();
-    }
 
     /* --- UTILS & CORE LOGIC --- */
     function log(msg, type="info") { const con = document.getElementById('consoleLog'); const div = document.createElement('div'); div.innerText = `[${new Date().toLocaleTimeString('en-GB')}] ${msg}`; if (type === "warn") div.className = "log-warn"; if (type === "err") div.className = "log-err"; if (type === "sys") div.className = "log-sys"; con.appendChild(div); con.scrollTop = con.scrollHeight; }
     function logWarn(msg) { log(msg, "warn"); } function logError(msg) { log(msg, "err"); }
-
     setInterval(() => document.getElementById('clockBanner').innerText = `SYS. TIME: ${new Date().toLocaleTimeString('en-GB')}`, 1000);
 
     /* --- CALENDAR --- */
@@ -433,40 +473,22 @@
     /* --- NOTES --- */
     const notesArea = document.getElementById('notesArea'); let noteTimeout;
     async function loadNotes() { try { const res = await fetch('/note'); const data = await res.json(); notesArea.value = data.content; } catch(e) {} }
-    notesArea.addEventListener('input', () => {
-        clearTimeout(noteTimeout);
-        noteTimeout = setTimeout(async () => {
-            try { await fetch('/note', { method: 'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({content: notesArea.value}) }); log("Scratchpad synced.", "sys"); } catch(e) {}
-        }, 1500);
-    }); loadNotes();
+    notesArea.addEventListener('input', () => { clearTimeout(noteTimeout); noteTimeout = setTimeout(async () => { try { await fetch('/note', { method: 'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({content: notesArea.value}) }); log("Scratchpad synced.", "sys"); } catch(e) {} }, 1500); }); loadNotes();
 
     /* --- REMINDERS & ALERTS --- */
     let activeReminders = [];
     function triggerAlert(msg) { document.getElementById('alertMessage').innerText = msg; document.getElementById('alertOverlay').style.display = 'flex'; logWarn(`ALERT: ${msg}`); }
     function dismissAlert() { document.getElementById('alertOverlay').style.display = 'none'; }
     async function loadReminders() {
-        try { const res = await fetch('/reminders'); activeReminders = await res.json(); const list = document.getElementById('reminderList'); list.innerHTML = '';
-            activeReminders.forEach(r => { list.innerHTML += `<div class="todo-item"><span class="todo-text">[${r.time}] ${r.text}</span><button onclick="deleteReminder(${r.id})" class="action-btn danger" style="padding: 2px 8px;">X</button></div>`; });
-        } catch(e) {}
+        try { const res = await fetch('/reminders'); activeReminders = await res.json(); const list = document.getElementById('reminderList'); list.innerHTML = ''; activeReminders.forEach(r => { list.innerHTML += `<div class="todo-item"><span class="todo-text">[${r.time}] ${r.text}</span><button onclick="deleteReminder(${r.id})" class="action-btn danger" style="padding: 2px 8px;">X</button></div>`; }); } catch(e) {}
     }
-    async function addReminder() {
-        const timeVal = document.getElementById('remTime').value, textVal = document.getElementById('remText').value;
-        if(!timeVal || !textVal) return;
-        try { await fetch('/reminders', { method: 'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({text: textVal, time: timeVal}) }); document.getElementById('remText').value = ''; loadReminders(); log(`Alert set.`, 'sys'); } catch(e){}
-    }
+    async function addReminder() { const timeVal = document.getElementById('remTime').value, textVal = document.getElementById('remText').value; if(!timeVal || !textVal) return; try { await fetch('/reminders', { method: 'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({text: textVal, time: timeVal}) }); document.getElementById('remText').value = ''; loadReminders(); log(`Alert set.`, 'sys'); } catch(e){} }
     async function deleteReminder(id) { try { await fetch(`/reminders/${id}`, { method: 'DELETE' }); loadReminders(); } catch(e){} }
-    setInterval(() => {
-        const now = new Date(), curTime = `${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}`;
-        activeReminders.forEach(r => { if(r.time === curTime) { triggerAlert(r.text); deleteReminder(r.id); } });
-    }, 10000); loadReminders();
+    setInterval(() => { const now = new Date(), curTime = `${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}`; activeReminders.forEach(r => { if(r.time === curTime) { triggerAlert(r.text); deleteReminder(r.id); } }); }, 10000); loadReminders();
 
     /* --- QUEUE --- */
     async function renderTasks() {
-        try { const response = await fetch('/todos'); const tasks = await response.json(); const list = document.getElementById('todoList'); list.innerHTML = ''; let completed = 0;
-            tasks.forEach(t => { if(t.done) completed++; list.innerHTML += `<div class="todo-item"><span class="todo-text ${t.done ? 'done' : ''}" onclick="toggleDone(${t.id})">> ${t.text}</span><button onclick="deleteTask(${t.id})" class="action-btn danger" style="padding: 2px 8px;">X</button></div>`; }); 
-            let pct = tasks.length === 0 ? 0 : Math.round((completed / tasks.length) * 100);
-            document.getElementById('queueProgressBar').style.width = `${pct}%`; document.getElementById('queueProgressText').innerText = `${pct}%`;
-        } catch (err) {}
+        try { const response = await fetch('/todos'); const tasks = await response.json(); const list = document.getElementById('todoList'); list.innerHTML = ''; let completed = 0; tasks.forEach(t => { if(t.done) completed++; list.innerHTML += `<div class="todo-item"><span class="todo-text ${t.done ? 'done' : ''}" onclick="toggleDone(${t.id})">> ${t.text}</span><button onclick="deleteTask(${t.id})" class="action-btn danger" style="padding: 2px 8px;">X</button></div>`; }); let pct = tasks.length === 0 ? 0 : Math.round((completed / tasks.length) * 100); document.getElementById('queueProgressBar').style.width = `${pct}%`; document.getElementById('queueProgressText').innerText = `${pct}%`; } catch (err) {}
     }
     async function addTodo() { const text = document.getElementById('todoInput').value.trim(); if (!text) return; try { await fetch('/add', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text: text }) }); document.getElementById('todoInput').value = ''; log(`Process added.`, 'sys'); renderTasks(); } catch (err) {} }
     async function toggleDone(id) { try { await fetch(`/toggle/${id}`, { method: 'POST' }); renderTasks(); } catch (err) {} }
