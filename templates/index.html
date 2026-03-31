@@ -121,6 +121,16 @@
 
         .overlay-screen { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(5, 0, 0, 0.95); z-index: 9999; display: none; flex-direction: column; justify-content: center; align-items: center; }
         .alert-overlay { color: var(--cyan); text-shadow: 0 0 20px var(--cyan); }
+        
+        /* News List Styling */
+        .news-article { border-left: 2px solid var(--cyan); padding-left: 10px; margin-bottom: 12px; transition: 0.2s; }
+        .news-article:hover { border-color: var(--neon-green); background: rgba(0, 255, 159, 0.05); }
+        .news-title { display: block; color: var(--neon-green); text-decoration: none; font-size: 11px; margin-bottom: 4px; }
+        .news-meta { font-size: 9px; color: #888; text-transform: uppercase; }
+        
+        /* Weather ASCII Styling */
+        .weather-ascii { font-family: monospace; white-space: pre; color: var(--cyan); text-align: center; margin-bottom: 15px; font-size: 10px; line-height: 1.2; text-shadow: 0 0 5px var(--cyan); }
+        .weather-metric { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--cyan-dim); font-size: 12px; color: #fff; }
     </style>
 </head>
 <body>
@@ -148,6 +158,9 @@
         <button class="launcher-btn" onclick="toggleWidget('widget-calc')">Co-Processor</button>
         <button class="launcher-btn" onclick="toggleWidget('widget-stopwatch')">Chronometer</button>
         <button class="launcher-btn" onclick="toggleWidget('widget-snake')">Snake Game</button>
+        
+        <button class="launcher-btn" onclick="toggleWidget('widget-weather')">Atmos Sensors</button>
+        <button class="launcher-btn" onclick="toggleWidget('widget-news')">Intel Feed</button>
     </div>
 
     <div style="margin-top: 10px;">
@@ -163,6 +176,39 @@
     </div>
 
     <div class="workspace" id="workspace">
+
+        <div class="card" id="widget-weather" style="width: 250px; height: 320px;">
+            <div class="card-header"><span class="title">ATMOS SENSORS</span><button class="close-btn" onclick="toggleWidget('widget-weather')">✖</button></div>
+            <div class="card-content">
+                <div style="font-size: 14px; letter-spacing: 2px; color: #fff; text-align: center; margin-bottom: 10px; border-bottom: 1px solid var(--cyan); padding-bottom: 5px;">
+                    LOC: BENGALURU, IND
+                </div>
+                <div class="weather-ascii" id="weatherIcon">
+      \  |  /
+    '- \/ -'
+      /  \
+     / |  \
+                </div>
+                <div class="weather-metric"><span>TEMP_2M:</span> <span id="w-temp" style="color:var(--neon-yellow);">--°C</span></div>
+                <div class="weather-metric"><span>WIND_10M:</span> <span id="w-wind" style="color:var(--cyan);">-- km/h</span></div>
+                <div class="weather-metric"><span>HUMIDITY:</span> <span id="w-hum" style="color:var(--cyan);">--%</span></div>
+                
+                <button class="action-btn" onclick="fetchWeather()" style="margin-top: auto; width: 100%;">FORCE SYNC</button>
+            </div>
+        </div>
+
+        <div class="card" id="widget-news" style="width: 380px; height: 400px;">
+            <div class="card-header"><span class="title">GLOBAL INTEL FEED</span><button class="close-btn" onclick="toggleWidget('widget-news')">✖</button></div>
+            <div class="card-content" style="padding-right: 5px;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 10px; align-items: center; border-bottom: 1px solid var(--cyan-dim); padding-bottom: 5px;">
+                    <span style="font-size: 10px; color: #888;">SRC: DEV.TO / TECH</span>
+                    <button class="action-btn" onclick="fetchNews()" style="padding: 2px 8px;">RELOAD</button>
+                </div>
+                <div id="newsContainer" style="overflow-y: auto; flex-grow: 1; padding-right: 10px;">
+                    <div style="color: var(--neon-green); font-size: 11px; text-align: center; padding-top: 20px; animation: flash 1.5s infinite;">ESTABLISHING LINK...</div>
+                </div>
+            </div>
+        </div>
 
         <div class="card" id="widget-focus" style="width: 320px; height: 260px;">
             <div class="card-header"><span class="title">FOCUS TRACKER</span><button class="close-btn" onclick="toggleWidget('widget-focus')">✖</button></div>
@@ -324,10 +370,61 @@
     <h2 id="alertMessage" style="font-size: 3rem; margin-top: 30px; border-bottom: 2px solid var(--cyan); padding-bottom:10px;">MSG</h2>
     <button class="action-btn" onclick="dismissAlert()" style="margin-top: 40px; font-size: 1.5rem; padding: 15px 40px;">ACKNOWLEDGE</button>
 </div>
-<style>@keyframes flash { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }</style>
 
 <script>
     Chart.defaults.color = '#00e5ff'; Chart.defaults.borderColor = 'rgba(0, 229, 255, 0.1)'; Chart.defaults.font.family = "'Share Tech Mono', monospace";
+
+    /* --- NEW: API FETCH LOGIC FOR WEATHER & NEWS --- */
+    
+    // 1. Weather Logic (Tethered to BENGALURU)
+    async function fetchWeather() {
+        try {
+            // Using Open-Meteo for Keyless local weather pull
+            const res = await fetch('https://api.open-meteo.com/v1/forecast?latitude=12.9716&longitude=77.5946&current=temperature_2m,relative_humidity_2m,wind_speed_10m&timezone=auto');
+            const data = await res.json();
+            
+            document.getElementById('w-temp').innerText = data.current.temperature_2m + '°C';
+            document.getElementById('w-wind').innerText = data.current.wind_speed_10m + ' km/h';
+            document.getElementById('w-hum').innerText = data.current.relative_humidity_2m + '%';
+            
+            log("Atmos sensors updated locally.", "sys");
+        } catch (e) {
+            log("Failed to sync atmos sensors.", "err");
+        }
+    }
+
+    // 2. News Logic (Dev.to Tech Articles)
+    async function fetchNews() {
+        try {
+            document.getElementById('newsContainer').innerHTML = '<div style="color:var(--neon-green);text-align:center;padding-top:20px;animation:flash 1s infinite;">SYNCING...</div>';
+            // Pulling 10 newest articles from the free Dev.to API
+            const res = await fetch('https://dev.to/api/articles?per_page=10');
+            const articles = await res.json();
+            
+            let html = '';
+            articles.forEach(art => {
+                html += `
+                    <div class="news-article">
+                        <a href="${art.url}" target="_blank" class="news-title">> ${art.title}</a>
+                        <div class="news-meta">
+                            <span>[AUTHOR: ${art.user.username}]</span> • 
+                            <span>❤️ ${art.public_reactions_count}</span>
+                        </div>
+                    </div>
+                `;
+            });
+            document.getElementById('newsContainer').innerHTML = html;
+            log("Global Intel feed synchronized.", "sys");
+        } catch (e) {
+            document.getElementById('newsContainer').innerHTML = '<div style="color:var(--neon-red);text-align:center;padding-top:20px;">LINK SEVERED.</div>';
+            log("Failed to sync Intel feed.", "err");
+        }
+    }
+
+    // Initialize API calls on boot
+    setTimeout(fetchWeather, 1500);
+    setTimeout(fetchNews, 2000);
+
 
     /* --- IDLE TRACKER / USER STATUS --- */
     let currentUserStatus = 'ONLINE'; 
@@ -335,7 +432,7 @@
     const AFK_TIMEOUT = 5 * 60 * 1000; // 5 mins
 
     function setStatus(status) {
-        if(currentUserStatus === 'BUSY' && status === 'AWAY') return; // Don't go AFK if in a focus session
+        if(currentUserStatus === 'BUSY' && status === 'AWAY') return; 
         currentUserStatus = status;
         const statusSpan = document.getElementById('userStatusSpan');
         statusSpan.innerText = status;
@@ -472,7 +569,10 @@
         else {
             card.classList.add('deployed'); card.style.zIndex = ++highestZ;
             if(!card.style.left) { const wBox = workspace.getBoundingClientRect(); card.style.left = (wBox.width/2 - parseInt(card.style.width)/2) + 'px'; card.style.top = (wBox.height/2 - parseInt(card.style.height)/2) + 'px'; }
-            updateLauncherState(id, true); log(`Module [${id}] deployed.`, "sys");
+            updateLauncherState(id, true); 
+            log(`Module [${id}] deployed.`, "sys");
+            if(id === 'widget-news') fetchNews();
+            if(id === 'widget-weather') fetchWeather();
         } saveLayout();
     }
 
@@ -555,7 +655,6 @@
         fill.style.width = cur + '%';
         txt.innerText = cur + '%';
         
-        // Color transition logic
         if(cur === 100) fill.style.background = 'var(--neon-green)';
         else fill.style.background = 'var(--cyan)';
     }
@@ -576,7 +675,6 @@
     /* --- CHARTS & SERVER DATA --- */
     const dCtx = document.getElementById('deployChart').getContext('2d');
     
-    // Updated to show Mbps
     const deployChart = new Chart(dCtx, { 
         type: 'line', 
         data: { 
@@ -586,7 +684,6 @@
         options: { responsive: true, maintainAspectRatio: false, animation: { duration: 0 } } 
     });
 
-    // --- LOCAL HARDWARE CHART ---
     const hwCtx = document.getElementById('chart2').getContext('2d');
     const resChart = new Chart(hwCtx, { 
         type: 'doughnut', 
@@ -601,11 +698,10 @@
         options: { 
             responsive: true, maintainAspectRatio: false, cutout: '70%', 
             plugins: { legend: { position: 'right', labels:{color:'#fff'} } },
-            animation: { duration: 500 } // Smooth transitions
+            animation: { duration: 500 } 
         } 
     });
 
-    // --- CPU RADAR CHART ---
     const cpuRadarCtx = document.getElementById('cpuRadarChart').getContext('2d');
     const cpuRadarChart = new Chart(cpuRadarCtx, { 
         type: 'radar', 
@@ -628,7 +724,6 @@
     let hwBases = [25, 55, 15, 75]; 
 
     function fetchClientMetrics() {
-        // 1. Network Speed
         let speedMbps = 0;
         if (navigator.connection && navigator.connection.downlink) {
             speedMbps = navigator.connection.downlink;
@@ -637,7 +732,6 @@
         deployChart.data.datasets[0].data.push(speedMbps); 
         deployChart.update();
 
-        // 2. Hardware Donut Simulation
         let newHwData = hwBases.map((base, index) => {
             if (index === 3) return base + (Math.random() * 2 - 1); 
             let shift = (Math.random() * 10 - 5); 
@@ -646,7 +740,6 @@
         resChart.data.datasets[0].data = newHwData;
         resChart.update();
 
-        // 3. CPU Core Radar Simulation
         cpuRadarChart.data.datasets[0].data = cpuRadarChart.data.datasets[0].data.map(val => {
             let shift = (Math.random() * 30 - 15);
             return Math.max(5, Math.min(95, val + shift));
@@ -668,7 +761,7 @@
         fetchServerMetrics();
     }, 2000);
 
-/* --- SNAKE GAME ENGINE (FLEXIBLE & RE-SPACED) --- */
+/* --- SNAKE GAME ENGINE --- */
     const sCanvas = document.getElementById('snakeCanvas');
     const sCtx = sCanvas.getContext('2d');
     const box = 14; 
@@ -678,21 +771,18 @@
     let food;
     let snakeScore = 0;
     let snakeGameLoop;
-    let cols, rows; // New variables to track dynamic grid size
+    let cols, rows; 
 
     function initSnake() {
         if(snakeGameLoop) clearInterval(snakeGameLoop);
         
-        // 1. Calculate new grid size based on current widget window size
         const wrapper = document.getElementById('snakeWrapper');
         cols = Math.floor(wrapper.clientWidth / box);
         rows = Math.floor(wrapper.clientHeight / box);
         
-        // 2. Snap canvas exactly to the grid
         sCanvas.width = cols * box;
         sCanvas.height = rows * box;
         
-        // Start snake dynamically in the center of the new grid
         snake = [{x: Math.floor(cols / 2) * box, y: Math.floor(rows / 2) * box}];
         
         snakeDir = null; 
@@ -703,14 +793,11 @@
         spawnFood();
         drawFrame(); 
         
-        // 3. SPEED CONTROL: Increased interval from 100ms to 180ms to slow it down.
-        // Change this number to tweak speed (higher = slower, lower = faster)
         snakeGameLoop = setInterval(gameTick, 180);
         log("Snake module initialized. Dynamic grid generated.", "sys");
     }
 
     function spawnFood() {
-        // Spawn food anywhere within the dynamic columns/rows limits
         food = {
             x: Math.floor(Math.random() * cols) * box,
             y: Math.floor(Math.random() * rows) * box
@@ -727,23 +814,21 @@
         const isGameKey = ['ARROWLEFT', 'A', 'ARROWUP', 'W', 'ARROWRIGHT', 'D', 'ARROWDOWN', 'S'].includes(key);
         
         if (isGameKey) {
-            event.preventDefault(); // Stop page from scrolling
+            event.preventDefault(); 
             
-            // Buffer the next input to prevent crashing on frame boundaries
             if((key === 'ARROWLEFT' || key === 'A') && snakeDir !== "RIGHT") nextDir = "LEFT";
             else if((key === 'ARROWUP' || key === 'W') && snakeDir !== "DOWN") nextDir = "UP";
             else if((key === 'ARROWRIGHT' || key === 'D') && snakeDir !== "LEFT") nextDir = "RIGHT";
             else if((key === 'ARROWDOWN' || key === 'S') && snakeDir !== "UP") nextDir = "DOWN";
             
-            // If the game was paused waiting for the first move, start immediately
             if (!snakeDir) snakeDir = nextDir;
         }
     });
 
     function gameTick() {
-        if (!snakeDir) return; // Wait for first input
+        if (!snakeDir) return; 
 
-        snakeDir = nextDir; // Apply buffered input
+        snakeDir = nextDir; 
         
         let snakeX = snake[0].x;
         let snakeY = snake[0].y;
@@ -755,12 +840,10 @@
 
         let newHead = { x: snakeX, y: snakeY };
 
-        // Game Over Boundaries & Collision
         if(snakeX < 0 || snakeX >= sCanvas.width || snakeY < 0 || snakeY >= sCanvas.height || collision(newHead, snake)){
             clearInterval(snakeGameLoop);
-            snakeGameLoop = null; // Prevent multiple clears
+            snakeGameLoop = null; 
             
-            // Draw a subtle overlay to make the red text pop
             sCtx.fillStyle = "rgba(0, 0, 0, 0.6)";
             sCtx.fillRect(0, 0, sCanvas.width, sCanvas.height);
             
@@ -772,24 +855,21 @@
             return;
         }
 
-        // Eat Food
         if(snakeX === food.x && snakeY === food.y){
             snakeScore++;
             document.getElementById('snakeScore').innerText = snakeScore;
             spawnFood();
-            // Don't pop the tail so it grows
         } else {
-            snake.pop(); // Remove tail
+            snake.pop(); 
         }
 
-        snake.unshift(newHead); // Push new head
-        drawFrame(); // Re-render the canvas
+        snake.unshift(newHead); 
+        drawFrame(); 
     }
 
     function drawFrame() {
         sCtx.clearRect(0, 0, sCanvas.width, sCanvas.height);
         
-        // Draw Snake
         for(let i = 0; i < snake.length; i++){
             sCtx.fillStyle = (i === 0) ? "#00e5ff" : "rgba(0, 229, 255, 0.4)";
             sCtx.fillRect(snake[i].x, snake[i].y, box, box);
@@ -797,7 +877,6 @@
             sCtx.strokeRect(snake[i].x, snake[i].y, box, box);
         }
 
-        // Draw Food
         sCtx.fillStyle = "#ff0055";
         sCtx.fillRect(food.x, food.y, box, box);
     }
