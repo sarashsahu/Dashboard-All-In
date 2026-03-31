@@ -61,7 +61,7 @@ def init_db():
         cursor.close()
         conn.close()
     except Exception as e:
-        print(f"Database connection error: {e}")
+        print(f"[SYSTEM ERROR] Database initialization failed: {e}")
 
 @app.before_request
 def track_metrics():
@@ -88,9 +88,6 @@ def home():
 def get_metrics():
     now = time.time()
     uptime_seconds = now - SERVER_START_TIME
-    cpu_usage = psutil.cpu_percent(interval=None)
-    ram_usage = psutil.virtual_memory().percent
-    disk_usage = psutil.disk_usage('/').percent
     
     recent_requests = sum(1 for t in traffic_history if now - t <= 2.0)
     requests_per_second = recent_requests / 2.0 if recent_requests > 0 else 0
@@ -106,8 +103,6 @@ def get_metrics():
 
     return jsonify({
         "uptime": uptime_seconds,
-        "hardware": [cpu_usage, ram_usage, disk_usage],
-        "traffic": requests_per_second,
         "threats": [ddos_risk, xss_risk, sqli_risk, brute_risk]
     })
 
@@ -123,102 +118,135 @@ def get_todos():
         cursor.close()
         conn.close()
         return jsonify(tasks)
-    except:
+    except Exception as e:
+        print(f"DB Error in /todos: {e}")
         return jsonify([])
 
 @app.route("/add", methods=["POST"])
 def add():
     task_text = request.json.get("text")
     if task_text:
-        conn = get_db_connection()
-        cursor = conn.cursor()
-        cursor.execute("INSERT INTO terminal_tasks (text, done) VALUES (%s, FALSE)", (task_text,))
-        conn.commit()
-        cursor.close()
-        conn.close()
-    return jsonify({"status": "success"})
+        try:
+            conn = get_db_connection()
+            cursor = conn.cursor()
+            cursor.execute("INSERT INTO terminal_tasks (text, done) VALUES (%s, FALSE)", (task_text,))
+            conn.commit()
+            cursor.close()
+            conn.close()
+            return jsonify({"status": "success"})
+        except Exception as e:
+            print(f"DB Error in /add: {e}")
+            return jsonify({"status": "error", "message": str(e)}), 500
+    return jsonify({"status": "error", "message": "No text provided"}), 400
 
 @app.route("/toggle/<int:task_id>", methods=["POST"])
 def toggle(task_id):
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    cursor.execute("UPDATE terminal_tasks SET done = NOT done WHERE id = %s", (task_id,))
-    conn.commit()
-    cursor.close()
-    conn.close()
-    return jsonify({"status": "success"})
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("UPDATE terminal_tasks SET done = NOT done WHERE id = %s", (task_id,))
+        conn.commit()
+        cursor.close()
+        conn.close()
+        return jsonify({"status": "success"})
+    except Exception as e:
+        print(f"DB Error in /toggle: {e}")
+        return jsonify({"status": "error", "message": str(e)}), 500
 
 @app.route("/delete/<int:task_id>", methods=["DELETE"])
 def delete(task_id):
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    cursor.execute("DELETE FROM terminal_tasks WHERE id = %s", (task_id,))
-    conn.commit()
-    cursor.close()
-    conn.close()
-    return jsonify({"status": "success"})
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("DELETE FROM terminal_tasks WHERE id = %s", (task_id,))
+        conn.commit()
+        cursor.close()
+        conn.close()
+        return jsonify({"status": "success"})
+    except Exception as e:
+        print(f"DB Error in /delete: {e}")
+        return jsonify({"status": "error", "message": str(e)}), 500
 
 @app.route("/clear_completed", methods=["DELETE"])
 def clear_completed():
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    cursor.execute("DELETE FROM terminal_tasks WHERE done = TRUE")
-    conn.commit()
-    cursor.close()
-    conn.close()
-    return jsonify({"status": "success"})
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("DELETE FROM terminal_tasks WHERE done = TRUE")
+        conn.commit()
+        cursor.close()
+        conn.close()
+        return jsonify({"status": "success"})
+    except Exception as e:
+        print(f"DB Error in /clear_completed: {e}")
+        return jsonify({"status": "error", "message": str(e)}), 500
 
 # --- NOTES ROUTES ---
 
 @app.route("/note", methods=["GET", "POST"])
 def manage_note():
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    if request.method == "POST":
-        content = request.json.get("content", "")
-        cursor.execute("UPDATE terminal_notes SET content = %s WHERE id = 1", (content,))
-        conn.commit()
-        result = {"status": "success"}
-    else:
-        cursor.execute("SELECT content FROM terminal_notes WHERE id = 1")
-        row = cursor.fetchone()
-        result = {"content": row[0] if row else ""}
-    cursor.close()
-    conn.close()
-    return jsonify(result)
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        if request.method == "POST":
+            content = request.json.get("content", "")
+            cursor.execute("UPDATE terminal_notes SET content = %s WHERE id = 1", (content,))
+            conn.commit()
+            result = {"status": "success"}
+        else:
+            cursor.execute("SELECT content FROM terminal_notes WHERE id = 1")
+            row = cursor.fetchone()
+            result = {"content": row[0] if row else ""}
+        cursor.close()
+        conn.close()
+        return jsonify(result)
+    except Exception as e:
+        print(f"DB Error in /note: {e}")
+        if request.method == "POST":
+            return jsonify({"status": "error", "message": str(e)}), 500
+        return jsonify({"content": "CONNECTION ERROR: Database unreachable."})
 
 # --- REMINDERS ROUTES ---
 
 @app.route("/reminders", methods=["GET", "POST"])
 def manage_reminders():
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    if request.method == "POST":
-        text = request.json.get("text")
-        alert_time = request.json.get("time")
-        if text and alert_time:
-            cursor.execute("INSERT INTO terminal_reminders (text, alert_time) VALUES (%s, %s)", (text, alert_time))
-            conn.commit()
-        result = {"status": "success"}
-    else:
-        cursor.execute("SELECT id, text, alert_time FROM terminal_reminders ORDER BY alert_time ASC")
-        result = [{"id": row[0], "text": row[1], "time": row[2]} for row in cursor.fetchall()]
-    cursor.close()
-    conn.close()
-    return jsonify(result)
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        if request.method == "POST":
+            text = request.json.get("text")
+            alert_time = request.json.get("time")
+            if text and alert_time:
+                cursor.execute("INSERT INTO terminal_reminders (text, alert_time) VALUES (%s, %s)", (text, alert_time))
+                conn.commit()
+            result = {"status": "success"}
+        else:
+            cursor.execute("SELECT id, text, alert_time FROM terminal_reminders ORDER BY alert_time ASC")
+            result = [{"id": row[0], "text": row[1], "time": row[2]} for row in cursor.fetchall()]
+        cursor.close()
+        conn.close()
+        return jsonify(result)
+    except Exception as e:
+        print(f"DB Error in /reminders: {e}")
+        if request.method == "POST":
+            return jsonify({"status": "error", "message": str(e)}), 500
+        return jsonify([])
 
 @app.route("/reminders/<int:r_id>", methods=["DELETE"])
 def delete_reminder(r_id):
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    cursor.execute("DELETE FROM terminal_reminders WHERE id = %s", (r_id,))
-    conn.commit()
-    cursor.close()
-    conn.close()
-    return jsonify({"status": "success"})
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("DELETE FROM terminal_reminders WHERE id = %s", (r_id,))
+        conn.commit()
+        cursor.close()
+        conn.close()
+        return jsonify({"status": "success"})
+    except Exception as e:
+        print(f"DB Error in /reminders (DELETE): {e}")
+        return jsonify({"status": "error", "message": str(e)}), 500
 
 
 if __name__ == '__main__':
     init_db() 
-    psutil.cpu_percent(interval=0.1) 
     app.run(host="0.0.0.0", port=80, threaded=True)

@@ -115,9 +115,9 @@
         .cal-today { background: var(--cyan); color: #000; font-weight: bold; box-shadow: 0 0 10px var(--cyan); }
 
         .progress-block { margin-bottom: 15px; }
-        .progress-label { font-size: 10px; margin-bottom: 5px; display: flex; justify-content: space-between; color: #fff;}
+        .progress-label { font-size: 10px; margin-bottom: 5px; display: flex; justify-content: space-between; align-items: center; color: #fff;}
         .progress-bar-container { background: rgba(0,0,0,0.8); border: 1px solid var(--cyan-dim); height: 10px; width: 100%; }
-        .progress-bar-fill { background: var(--cyan); height: 100%; transition: width 0.5s; box-shadow: 0 0 8px var(--cyan); }
+        .progress-bar-fill { background: var(--cyan); height: 100%; transition: width 0.3s ease-out; box-shadow: 0 0 8px var(--cyan); }
 
         .overlay-screen { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(5, 0, 0, 0.95); z-index: 9999; display: none; flex-direction: column; justify-content: center; align-items: center; }
         .alert-overlay { color: var(--cyan); text-shadow: 0 0 20px var(--cyan); }
@@ -135,18 +135,19 @@
 
     <div style="font-size: 10px; color: #888; margin-bottom: 2px;">MODULE LAUNCHER</div>
     <div style="overflow-y: auto; display: flex; flex-direction: column; gap: 8px; flex-grow: 1; padding-right: 5px;">
-        <button class="launcher-btn" onclick="toggleWidget('widget-traffic')">Traffic Metrics</button>
-        <button class="launcher-btn" onclick="toggleWidget('widget-hw')">Hardware Res</button>
+        <button class="launcher-btn" onclick="toggleWidget('widget-traffic')">Network Link</button>
+        <button class="launcher-btn" onclick="toggleWidget('widget-hw')">Local Hardware</button>
+        <button class="launcher-btn" onclick="toggleWidget('widget-cpu-radar')">CPU Util Radar</button>
         <button class="launcher-btn" onclick="toggleWidget('widget-focus')">Focus Tracker</button>
         <button class="launcher-btn" onclick="toggleWidget('widget-spotify')">Audio Link</button>
         <button class="launcher-btn" onclick="toggleWidget('widget-queue')">Process Queue</button>
+        <button class="launcher-btn" onclick="toggleWidget('widget-tracker')">Progress Tracker</button>
         <button class="launcher-btn" onclick="toggleWidget('widget-notes')">Secure Scratchpad</button>
         <button class="launcher-btn" onclick="toggleWidget('widget-calendar')">Sys Calendar</button>
         <button class="launcher-btn" onclick="toggleWidget('widget-reminders')">Alerts Setup</button>
         <button class="launcher-btn" onclick="toggleWidget('widget-calc')">Co-Processor</button>
         <button class="launcher-btn" onclick="toggleWidget('widget-stopwatch')">Chronometer</button>
-        <button class="launcher-btn" onclick="toggleWidget('widget-threat')">Threat Radar</button>
-        <button class="launcher-btn" onclick="toggleWidget('widget-progress')">System Build</button>
+        <button class="launcher-btn" onclick="toggleWidget('widget-snake')">Snake Game</button>
     </div>
 
     <div style="margin-top: 10px;">
@@ -192,30 +193,40 @@
         </div>
 
         <div class="card" id="widget-traffic" style="width: 500px; height: 300px;">
-            <div class="card-header"><span class="title">TRAFFIC METRICS</span><button class="close-btn" onclick="toggleWidget('widget-traffic')">✖</button></div>
+            <div class="card-header"><span class="title">NETWORK LINK</span><button class="close-btn" onclick="toggleWidget('widget-traffic')">✖</button></div>
             <div class="card-content"><div style="position: relative; width: 100%; height: 100%;"><canvas id="deployChart"></canvas></div></div>
         </div>
 
         <div class="card" id="widget-hw" style="width: 350px; height: 300px;">
-            <div class="card-header"><span class="title">HARDWARE RESOURCES</span><button class="close-btn" onclick="toggleWidget('widget-hw')">✖</button></div>
+            <div class="card-header"><span class="title">LOCAL HARDWARE</span><button class="close-btn" onclick="toggleWidget('widget-hw')">✖</button></div>
             <div class="card-content"><div style="position: relative; width: 100%; height: 100%;"><canvas id="chart2"></canvas></div></div>
         </div>
 
-        <div class="card" id="widget-threat" style="width: 350px; height: 300px;">
-            <div class="card-header"><span class="title">THREAT ANALYSIS</span><button class="close-btn" onclick="toggleWidget('widget-threat')">✖</button></div>
-            <div class="card-content"><div style="position: relative; width: 100%; height: 100%;"><canvas id="chart3"></canvas></div></div>
+        <div class="card" id="widget-cpu-radar" style="width: 350px; height: 300px;">
+            <div class="card-header"><span class="title">CPU CORES UTILIZATION</span><button class="close-btn" onclick="toggleWidget('widget-cpu-radar')">✖</button></div>
+            <div class="card-content"><div style="position: relative; width: 100%; height: 100%;"><canvas id="cpuRadarChart"></canvas></div></div>
         </div>
 
-        <div class="card" id="widget-progress" style="width: 350px; height: 250px;">
-            <div class="card-header"><span class="title">SYSTEM BUILD</span><button class="close-btn" onclick="toggleWidget('widget-progress')">✖</button></div>
-            <div class="card-content" style="justify-content: center;">
-                <div class="progress-block">
-                    <div class="progress-label"><span>SYS. COMPILE</span><span>85%</span></div>
-                    <div class="progress-bar-container"><div class="progress-bar-fill" style="width: 85%;"></div></div>
+        <div class="card" id="widget-tracker" style="width: 350px; height: 300px;">
+            <div class="card-header"><span class="title">CUSTOM PROGRESS TRACKER</span><button class="close-btn" onclick="toggleWidget('widget-tracker')">✖</button></div>
+            <div class="card-content" style="overflow-y: auto;">
+                <div style="display:flex; gap: 5px; margin-bottom: 15px;">
+                    <input id="newTrackerName" placeholder="New Tracker Name..." style="flex-grow: 1;" onkeypress="if(event.key === 'Enter') addTracker()">
+                    <button class="action-btn" onclick="addTracker()">ADD</button>
                 </div>
-                <div class="progress-block">
-                    <div class="progress-label"><span>QUEUE YIELD</span><span id="queueProgressText">0%</span></div>
-                    <div class="progress-bar-container"><div class="progress-bar-fill" id="queueProgressBar" style="width: 0%; background: var(--neon-green);"></div></div>
+                <div id="trackerContainer">
+                    <div class="progress-block" id="tracker-init">
+                        <div class="progress-label">
+                            <span>SYSTEM COMPILE</span>
+                            <div>
+                                <span class="pct-text" style="margin-right:10px;">85%</span>
+                                <button class="action-btn" style="padding: 2px 6px;" onclick="updateTracker('tracker-init', -5)">-</button>
+                                <button class="action-btn" style="padding: 2px 6px;" onclick="updateTracker('tracker-init', 5)">+</button>
+                                <button class="action-btn danger" style="padding: 2px 6px;" onclick="document.getElementById('tracker-init').remove()">X</button>
+                            </div>
+                        </div>
+                        <div class="progress-bar-container"><div class="progress-bar-fill" style="width: 85%;" data-pct="85"></div></div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -282,6 +293,20 @@
                     <button class="action-btn" onclick="pauseStopwatch()" style="flex: 1;">PAUSE</button>
                     <button class="action-btn danger" onclick="resetStopwatch()" style="flex: 1;">RST</button>
                 </div>
+            </div>
+        </div>
+
+        <div class="card" id="widget-snake" style="width: 320px; height: 380px;">
+            <div class="card-header"><span class="title">SNAKE.EXE</span><button class="close-btn" onclick="toggleWidget('widget-snake')">✖</button></div>
+            <div class="card-content" style="align-items: center; display: flex; flex-direction: column;">
+                <div style="display:flex; justify-content: space-between; width: 100%; margin-bottom: 10px; color: var(--neon-green);">
+                    <span style="font-size: 14px; font-weight: bold;">SCORE: <span id="snakeScore">0</span></span>
+                    <button class="action-btn" onclick="initSnake()">START / RST</button>
+                </div>
+                <div id="snakeWrapper" style="flex-grow: 1; width: 100%; display: flex; justify-content: center; align-items: center; overflow: hidden;">
+                    <canvas id="snakeCanvas" style="background: rgba(0,0,0,0.8); border: 1px solid var(--cyan-dim); box-shadow: 0 0 10px rgba(0,229,255,0.2);"></canvas>
+                </div>
+                <div style="font-size: 9px; color: #888; margin-top: 10px; text-align: center;">USE ARROW KEYS. CLICK WIDGET TO FOCUS.</div>
             </div>
         </div>
 
@@ -391,7 +416,7 @@
         try {
             const url = new URL(uri);
             const path = url.pathname; 
-            const embedUrl = `https://open.spotify.com/embed${path}?utm_source=generator&theme=0`;
+            const embedUrl = `https://open.spotify.com/embed$${path}?utm_source=generator&theme=0`;
             document.getElementById('spotifyFrame').src = embedUrl;
             document.getElementById('spotifyUri').value = '';
             log("Audio stream linked successfully.", "sys");
@@ -488,13 +513,52 @@
 
     /* --- QUEUE --- */
     async function renderTasks() {
-        try { const response = await fetch('/todos'); const tasks = await response.json(); const list = document.getElementById('todoList'); list.innerHTML = ''; let completed = 0; tasks.forEach(t => { if(t.done) completed++; list.innerHTML += `<div class="todo-item"><span class="todo-text ${t.done ? 'done' : ''}" onclick="toggleDone(${t.id})">> ${t.text}</span><button onclick="deleteTask(${t.id})" class="action-btn danger" style="padding: 2px 8px;">X</button></div>`; }); let pct = tasks.length === 0 ? 0 : Math.round((completed / tasks.length) * 100); document.getElementById('queueProgressBar').style.width = `${pct}%`; document.getElementById('queueProgressText').innerText = `${pct}%`; } catch (err) {}
+        try { const response = await fetch('/todos'); const tasks = await response.json(); const list = document.getElementById('todoList'); list.innerHTML = ''; let completed = 0; tasks.forEach(t => { if(t.done) completed++; list.innerHTML += `<div class="todo-item"><span class="todo-text ${t.done ? 'done' : ''}" onclick="toggleDone(${t.id})">> ${t.text}</span><button onclick="deleteTask(${t.id})" class="action-btn danger" style="padding: 2px 8px;">X</button></div>`; }); } catch (err) {}
     }
     async function addTodo() { const text = document.getElementById('todoInput').value.trim(); if (!text) return; try { await fetch('/add', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text: text }) }); document.getElementById('todoInput').value = ''; log(`Process added.`, 'sys'); renderTasks(); } catch (err) {} }
     async function toggleDone(id) { try { await fetch(`/toggle/${id}`, { method: 'POST' }); renderTasks(); } catch (err) {} }
     async function deleteTask(id) { try { await fetch(`/delete/${id}`, { method: 'DELETE' }); renderTasks(); } catch (err) {} }
     async function clearCompletedTasks() { try { await fetch('/clear_completed', { method: 'DELETE' }); log(`Memory purged.`, 'sys'); renderTasks(); } catch (err) {} }
     renderTasks();
+
+    /* --- CUSTOM PROGRESS TRACKER --- */
+    function addTracker() {
+        const name = document.getElementById('newTrackerName').value.trim();
+        if(!name) return;
+        const container = document.getElementById('trackerContainer');
+        const id = 'tracker-' + Date.now();
+        container.innerHTML += `
+            <div class="progress-block" id="${id}">
+                <div class="progress-label">
+                    <span>${name.toUpperCase()}</span>
+                    <div>
+                        <span class="pct-text" style="margin-right:10px;">0%</span>
+                        <button class="action-btn" style="padding: 2px 6px;" onclick="updateTracker('${id}', -5)">-</button>
+                        <button class="action-btn" style="padding: 2px 6px;" onclick="updateTracker('${id}', 5)">+</button>
+                        <button class="action-btn danger" style="padding: 2px 6px;" onclick="document.getElementById('${id}').remove()">X</button>
+                    </div>
+                </div>
+                <div class="progress-bar-container"><div class="progress-bar-fill" style="width: 0%;" data-pct="0"></div></div>
+            </div>
+        `;
+        document.getElementById('newTrackerName').value = '';
+    }
+    
+    function updateTracker(id, amt) {
+        const block = document.getElementById(id);
+        if(!block) return;
+        const fill = block.querySelector('.progress-bar-fill');
+        const txt = block.querySelector('.pct-text');
+        let cur = parseInt(fill.getAttribute('data-pct')) || 0;
+        cur = Math.max(0, Math.min(100, cur + amt));
+        fill.setAttribute('data-pct', cur);
+        fill.style.width = cur + '%';
+        txt.innerText = cur + '%';
+        
+        // Color transition logic
+        if(cur === 100) fill.style.background = 'var(--neon-green)';
+        else fill.style.background = 'var(--cyan)';
+    }
 
     /* --- CALCULATOR --- */
     let exp = ''; const calcDisp = document.getElementById('calcDisplay');
@@ -511,19 +575,240 @@
 
     /* --- CHARTS & SERVER DATA --- */
     const dCtx = document.getElementById('deployChart').getContext('2d');
-    const deployChart = new Chart(dCtx, { type: 'line', data: { labels: ['T-8', 'T-6', 'T-4', 'T-2', 'NOW'], datasets: [{ label: 'REQ/s', data: [0,0,0,0,0], borderColor: '#00e5ff', backgroundColor: 'rgba(0,229,255,0.1)', fill: true, tension: 0.4 }] }, options: { responsive: true, maintainAspectRatio: false, animation: { duration: 0 } } });
-    const resChart = new Chart(document.getElementById('chart2'), { type: 'doughnut', data: { labels: ['CPU', 'RAM', 'DISK'], datasets: [{ data: [0,0,0], backgroundColor: ['#00e5ff', '#00ff9f', '#114455'], borderWidth: 0 }] }, options: { responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: { position: 'right', labels:{color:'#fff'} } } } });
-    const thChart = new Chart(document.getElementById('chart3'), { type: 'radar', data: { labels: ['DDoS', 'XSS', 'SQLi', 'Brute'], datasets: [{ data: [0,0,0,0], borderColor: '#ff0055', backgroundColor: 'rgba(255,0,85,0.2)' }] }, options: { responsive: true, maintainAspectRatio: false, scales: { r: { min: 0, max: 100, ticks:{display:false}, grid:{color:'rgba(0,229,255,0.2)'}, pointLabels:{color:'#fff'} } }, plugins: { legend: {display:false} } } });
+    
+    // Updated to show Mbps
+    const deployChart = new Chart(dCtx, { 
+        type: 'line', 
+        data: { 
+            labels: ['T-8', 'T-6', 'T-4', 'T-2', 'NOW'], 
+            datasets: [{ label: 'DOWNLINK (Mbps)', data: [0,0,0,0,0], borderColor: '#00e5ff', backgroundColor: 'rgba(0,229,255,0.1)', fill: true, tension: 0.4 }] 
+        }, 
+        options: { responsive: true, maintainAspectRatio: false, animation: { duration: 0 } } 
+    });
+
+    // --- LOCAL HARDWARE CHART ---
+    const hwCtx = document.getElementById('chart2').getContext('2d');
+    const resChart = new Chart(hwCtx, { 
+        type: 'doughnut', 
+        data: { 
+            labels: ['CPU', 'RAM', 'GPU', 'DISK'], 
+            datasets: [{ 
+                data: [35, 60, 20, 75], // Starting baselines
+                backgroundColor: ['#00e5ff', '#00ff9f', '#ffcc00', '#114455'], 
+                borderWidth: 0 
+            }] 
+        }, 
+        options: { 
+            responsive: true, maintainAspectRatio: false, cutout: '70%', 
+            plugins: { legend: { position: 'right', labels:{color:'#fff'} } },
+            animation: { duration: 500 } // Smooth transitions
+        } 
+    });
+
+    // --- CPU RADAR CHART ---
+    const cpuRadarCtx = document.getElementById('cpuRadarChart').getContext('2d');
+    const cpuRadarChart = new Chart(cpuRadarCtx, { 
+        type: 'radar', 
+        data: { 
+            labels: ['Core 0', 'Core 1', 'Core 2', 'Core 3', 'Core 4', 'Core 5', 'Core 6', 'Core 7'], 
+            datasets: [{ 
+                data: [10, 15, 20, 10, 30, 12, 45, 10], 
+                borderColor: '#00ff9f', 
+                backgroundColor: 'rgba(0,255,159,0.2)' 
+            }] 
+        }, 
+        options: { 
+            responsive: true, maintainAspectRatio: false, 
+            scales: { r: { min: 0, max: 100, ticks:{display:false}, grid:{color:'rgba(0,229,255,0.2)'}, pointLabels:{color:'#fff', font: {family: "'Share Tech Mono', monospace", size: 10}} } }, 
+            plugins: { legend: {display:false} },
+            animation: { duration: 800 } 
+        } 
+    });
+
+    let hwBases = [25, 55, 15, 75]; 
+
+    function fetchClientMetrics() {
+        // 1. Network Speed
+        let speedMbps = 0;
+        if (navigator.connection && navigator.connection.downlink) {
+            speedMbps = navigator.connection.downlink;
+        }
+        deployChart.data.datasets[0].data.shift(); 
+        deployChart.data.datasets[0].data.push(speedMbps); 
+        deployChart.update();
+
+        // 2. Hardware Donut Simulation
+        let newHwData = hwBases.map((base, index) => {
+            if (index === 3) return base + (Math.random() * 2 - 1); 
+            let shift = (Math.random() * 10 - 5); 
+            return Math.max(0, Math.min(100, base + shift));
+        });
+        resChart.data.datasets[0].data = newHwData;
+        resChart.update();
+
+        // 3. CPU Core Radar Simulation
+        cpuRadarChart.data.datasets[0].data = cpuRadarChart.data.datasets[0].data.map(val => {
+            let shift = (Math.random() * 30 - 15);
+            return Math.max(5, Math.min(95, val + shift));
+        });
+        cpuRadarChart.update();
+    }
 
     async function fetchServerMetrics() {
         try {
-            const res = await fetch('/api/metrics'); const data = await res.json();
-            let u = Math.floor(data.uptime); document.getElementById('uptime').innerText = `${Math.floor(u/86400)}d ${Math.floor((u%86400)/3600)}h`;
-            deployChart.data.datasets[0].data.shift(); deployChart.data.datasets[0].data.push(data.traffic); deployChart.update();
-            resChart.data.datasets[0].data = data.hardware; resChart.update();
-            thChart.data.datasets[0].data = data.threats; thChart.update();
+            const res = await fetch('/api/metrics'); 
+            const data = await res.json();
+            let u = Math.floor(data.uptime); 
+            document.getElementById('uptime').innerText = `${Math.floor(u/86400)}d ${Math.floor((u%86400)/3600)}h`;
         } catch(e) {}
-    } setInterval(fetchServerMetrics, 2000);
+    } 
+
+    setInterval(() => {
+        fetchClientMetrics();
+        fetchServerMetrics();
+    }, 2000);
+
+/* --- SNAKE GAME ENGINE (FLEXIBLE & RE-SPACED) --- */
+    const sCanvas = document.getElementById('snakeCanvas');
+    const sCtx = sCanvas.getContext('2d');
+    const box = 14; 
+    let snake = [];
+    let snakeDir = null; 
+    let nextDir = null;  
+    let food;
+    let snakeScore = 0;
+    let snakeGameLoop;
+    let cols, rows; // New variables to track dynamic grid size
+
+    function initSnake() {
+        if(snakeGameLoop) clearInterval(snakeGameLoop);
+        
+        // 1. Calculate new grid size based on current widget window size
+        const wrapper = document.getElementById('snakeWrapper');
+        cols = Math.floor(wrapper.clientWidth / box);
+        rows = Math.floor(wrapper.clientHeight / box);
+        
+        // 2. Snap canvas exactly to the grid
+        sCanvas.width = cols * box;
+        sCanvas.height = rows * box;
+        
+        // Start snake dynamically in the center of the new grid
+        snake = [{x: Math.floor(cols / 2) * box, y: Math.floor(rows / 2) * box}];
+        
+        snakeDir = null; 
+        nextDir = null;
+        snakeScore = 0;
+        document.getElementById('snakeScore').innerText = snakeScore;
+        
+        spawnFood();
+        drawFrame(); 
+        
+        // 3. SPEED CONTROL: Increased interval from 100ms to 180ms to slow it down.
+        // Change this number to tweak speed (higher = slower, lower = faster)
+        snakeGameLoop = setInterval(gameTick, 180);
+        log("Snake module initialized. Dynamic grid generated.", "sys");
+    }
+
+    function spawnFood() {
+        // Spawn food anywhere within the dynamic columns/rows limits
+        food = {
+            x: Math.floor(Math.random() * cols) * box,
+            y: Math.floor(Math.random() * rows) * box
+        };
+    }
+
+    document.addEventListener("keydown", function(event) {
+        if(document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') return;
+        
+        const snakeWidget = document.getElementById('widget-snake');
+        if(!snakeWidget || !snakeWidget.classList.contains('deployed')) return;
+
+        const key = event.key.toUpperCase();
+        const isGameKey = ['ARROWLEFT', 'A', 'ARROWUP', 'W', 'ARROWRIGHT', 'D', 'ARROWDOWN', 'S'].includes(key);
+        
+        if (isGameKey) {
+            event.preventDefault(); // Stop page from scrolling
+            
+            // Buffer the next input to prevent crashing on frame boundaries
+            if((key === 'ARROWLEFT' || key === 'A') && snakeDir !== "RIGHT") nextDir = "LEFT";
+            else if((key === 'ARROWUP' || key === 'W') && snakeDir !== "DOWN") nextDir = "UP";
+            else if((key === 'ARROWRIGHT' || key === 'D') && snakeDir !== "LEFT") nextDir = "RIGHT";
+            else if((key === 'ARROWDOWN' || key === 'S') && snakeDir !== "UP") nextDir = "DOWN";
+            
+            // If the game was paused waiting for the first move, start immediately
+            if (!snakeDir) snakeDir = nextDir;
+        }
+    });
+
+    function gameTick() {
+        if (!snakeDir) return; // Wait for first input
+
+        snakeDir = nextDir; // Apply buffered input
+        
+        let snakeX = snake[0].x;
+        let snakeY = snake[0].y;
+
+        if(snakeDir === "LEFT") snakeX -= box;
+        if(snakeDir === "UP") snakeY -= box;
+        if(snakeDir === "RIGHT") snakeX += box;
+        if(snakeDir === "DOWN") snakeY += box;
+
+        let newHead = { x: snakeX, y: snakeY };
+
+        // Game Over Boundaries & Collision
+        if(snakeX < 0 || snakeX >= sCanvas.width || snakeY < 0 || snakeY >= sCanvas.height || collision(newHead, snake)){
+            clearInterval(snakeGameLoop);
+            snakeGameLoop = null; // Prevent multiple clears
+            
+            // Draw a subtle overlay to make the red text pop
+            sCtx.fillStyle = "rgba(0, 0, 0, 0.6)";
+            sCtx.fillRect(0, 0, sCanvas.width, sCanvas.height);
+            
+            sCtx.fillStyle = "#ff0055";
+            sCtx.font = "24px Share Tech Mono";
+            sCtx.textAlign = "center";
+            sCtx.fillText("GAME OVER", sCanvas.width / 2, sCanvas.height / 2);
+            log(`Snake process terminated. Score: ${snakeScore}`, "err");
+            return;
+        }
+
+        // Eat Food
+        if(snakeX === food.x && snakeY === food.y){
+            snakeScore++;
+            document.getElementById('snakeScore').innerText = snakeScore;
+            spawnFood();
+            // Don't pop the tail so it grows
+        } else {
+            snake.pop(); // Remove tail
+        }
+
+        snake.unshift(newHead); // Push new head
+        drawFrame(); // Re-render the canvas
+    }
+
+    function drawFrame() {
+        sCtx.clearRect(0, 0, sCanvas.width, sCanvas.height);
+        
+        // Draw Snake
+        for(let i = 0; i < snake.length; i++){
+            sCtx.fillStyle = (i === 0) ? "#00e5ff" : "rgba(0, 229, 255, 0.4)";
+            sCtx.fillRect(snake[i].x, snake[i].y, box, box);
+            sCtx.strokeStyle = "#000";
+            sCtx.strokeRect(snake[i].x, snake[i].y, box, box);
+        }
+
+        // Draw Food
+        sCtx.fillStyle = "#ff0055";
+        sCtx.fillRect(food.x, food.y, box, box);
+    }
+
+    function collision(head, array){
+        for(let i = 0; i < array.length; i++){
+            if(head.x === array[i].x && head.y === array[i].y) return true;
+        }
+        return false;
+    }
+
 </script>
 </body>
 </html>
